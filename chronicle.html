@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronicle — The Gospodnetich Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #100e0b;
+    --bg2:     #17140f;
+    --bg3:     #1f1b14;
+    --border:  rgba(210,185,145,0.1);
+    --border2: rgba(210,185,145,0.18);
+    --text:    #e6dfd3;
+    --muted:   #8a8070;
+    --faint:   #4a4438;
+    --ink:     #c8b48a;
+    --ink2:    #7a9e8a;
+    --serif:   'Playfair Display', Georgia, serif;
+    --body:    'Crimson Pro', Georgia, serif;
+    --mono:    'DM Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 17px; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(16,14,11,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2.5rem; height: 58px;
+  }
+  .nav-logo { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); letter-spacing: 0.02em; text-decoration: none; }
+  .nav-logo .tld { color: var(--ink); font-style: italic; }
+  .nav-rule { width: 1px; height: 16px; background: var(--border2); margin: 0 1.4rem; flex-shrink: 0; }
+  .nav-tagline { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.15em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; margin-left: auto; }
+  .nav-links a { font-family: var(--mono); font-size: 10px; color: var(--muted); text-decoration: none; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+
+  .page-header { max-width: 1100px; margin: 0 auto; padding: 5rem 2.5rem 3rem; }
+  .page-stamp { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink2); border: 1px solid rgba(122,158,138,0.35); border-radius: 2px; padding: 4px 10px; margin-bottom: 1.5rem; }
+  .page-title { font-family: var(--serif); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 400; line-height: 1.05; }
+  .page-title em { color: var(--ink); font-style: italic; }
+  .page-rule { width: 48px; height: 1px; background: var(--border2); margin: 1.5rem 0; }
+  .page-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 480px; font-style: italic; }
+
+  .ruled-divider { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
+  .ruled-divider::before, .ruled-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .ruled-divider span { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+
+  .map-section { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; }
+  .map-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .map-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .map-container { width: 100%; height: 400px; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
+  #map { width: 100%; height: 100%; }
+  .leaflet-tile { filter: brightness(0.38) saturate(0.2) sepia(0.3); }
+  .leaflet-container { background: #100e0b; }
+  .leaflet-control-zoom a { background: #1f1b14 !important; color: #e6dfd3 !important; border-color: rgba(210,185,145,0.1) !important; border-radius: 2px !important; }
+  .leaflet-control-attribution { background: rgba(16,14,11,0.8) !important; color: #4a4438 !important; font-size: 10px !important; }
+  .leaflet-control-attribution a { color: #4a4438 !important; }
+  .trip-pin { width: 11px; height: 11px; border-radius: 50%; background: #c8b48a; border: 2px solid #e6dfd3; box-shadow: 0 0 0 3px rgba(200,180,138,0.2); }
+
+  .stats-row { max-width: 1100px; margin: 2rem auto 0; padding: 0 2.5rem; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .stat-card { padding: 1.2rem 1.5rem; border-right: 1px solid var(--border); }
+  .stat-card:last-child { border-right: none; }
+  .stat-card .label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); margin-bottom: 0.4rem; }
+  .stat-card .value { font-family: var(--serif); font-size: 2rem; font-weight: 400; color: var(--ink); font-style: italic; }
+
+  .log-section { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; }
+  .log-header { margin-bottom: 1.25rem; }
+
+  .trip-table { width: 100%; border-collapse: collapse; }
+  .trip-table thead tr { border-bottom: 1px solid var(--border2); }
+  .trip-table th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); font-weight: 400; padding: 0 1.5rem 0.9rem 0; text-align: left; }
+  .trip-table th:last-child { padding-right: 0; }
+  .trip-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .trip-table tbody tr:hover { background: var(--bg3); }
+  .trip-table td { padding: 1.2rem 1.5rem 1.2rem 0; vertical-align: middle; }
+  .trip-table td:last-child { padding-right: 0; }
+
+  .trip-destination { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); }
+  .trip-country { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 3px; letter-spacing: 0.08em; }
+  .trip-date { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .trip-who { display: flex; gap: 6px; flex-wrap: wrap; }
+  .who-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 3px 8px; color: var(--muted); }
+  .trip-notes { font-size: 15px; color: var(--muted); max-width: 260px; line-height: 1.5; font-style: italic; }
+
+  .empty-state { text-align: center; padding: 5rem 2rem; border: 1px solid var(--border); border-radius: 4px; }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 1.5rem; display: block; opacity: 0.3; }
+  .empty-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; color: var(--text); margin-bottom: 0.75rem; font-style: italic; }
+  .empty-sub { font-family: var(--mono); font-size: 11px; color: var(--faint); line-height: 1.7; letter-spacing: 0.05em; }
+
+  /* YEAR FILTERS */
+  .filter-wrap { max-width: 1100px; margin: 2rem auto 0; padding: 0 2.5rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .year-btn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 5px 14px; border-radius: 2px; border: 1px solid var(--border); background: var(--bg2); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .year-btn:hover { border-color: var(--border2); color: var(--text); }
+  .year-btn.active { background: var(--bg3); border-color: var(--ink); color: var(--ink); }
+
+  footer { max-width: 1100px; margin: 5rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
+  .footer-mark { color: var(--ink2); margin: 0 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
+  <div class="nav-rule"></div>
+  <span class="nav-tagline">Family Log</span>
+  <ul class="nav-links">
+    <li><a href="schedule.html">Schedule</a></li>
+    <li><a href="chronicle.html" class="active">Chronicle</a></li>
+    <li><a href="sidequests.html">Side Quests</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <span class="page-stamp">Travel Record</span>
+  <h1 class="page-title">The <em>Chronicle</em></h1>
+  <div class="page-rule"></div>
+  <p class="page-sub">Every place we've been, mapped and listed. Wherever we've gone, whenever we went, whoever came along.</p>
+</div>
+
+<div class="ruled-divider"><span>Map View</span></div>
+
+<div class="map-section">
+  <div class="map-header">
+    <span class="map-label">All Trips</span>
+  </div>
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
+</div>
+
+<div class="filter-wrap" id="year-filters"></div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="label">Trips taken</div>
+    <div class="value" id="trip-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Places visited</div>
+    <div class="value" id="place-count">0</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Years tracking</div>
+    <div class="value">2021–</div>
+  </div>
+</div>
+
+<div class="log-section">
+  <div class="ruled-divider" style="padding:0;margin:3rem 0 1.5rem"><span>Trip Log</span></div>
+  <div id="trip-log"></div>
+</div>
+
+<footer>
+  <span>gospodneti.ch</span>
+  <span>Private<span class="footer-mark">·</span>2026</span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ============================================================
+// ADD YOUR TRIPS HERE
+// Each entry: { destination, country, lat, lng, date, who[], notes }
+// ============================================================
+const TRIPS = [
+  // ── 2021 ──────────────────────────────────────────────────
+  { destination: "Fullerton, CA", country: "California, USA", lat: 33.8703, lng: -117.9253, date: "July 2021", who: ["Sai", "Dominic"], notes: "July 28 — Sai & Dom start dating. 🖤" },
+  { destination: "Mt. Shasta", country: "California, USA", lat: 41.3099, lng: -122.3106, date: "November 2021", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop on the way north." },
+  { destination: "Springfield", country: "Oregon, USA", lat: 44.0462, lng: -123.0220, date: "November 2021", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Suncadia", country: "Washington, USA", lat: 47.3968, lng: -121.0408, date: "November 2021", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Thanksgiving at Suncadia with the Baek & Nicholls families." },
+  { destination: "Seattle", country: "Washington, USA", lat: 47.6062, lng: -122.3321, date: "November 2021", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Annual Thanksgiving trip with the Baek & Nicholls families." },
+
+  // ── 2022 ──────────────────────────────────────────────────
+  { destination: "Castello di Amorosa", country: "Calistoga, CA, USA", lat: 38.6010, lng: -122.5852, date: "March 2022", who: ["Sai", "Dominic", "Kyle", "Kailey"], notes: "Winery visit with Kyle & Kailey." },
+  { destination: "Mt. Shasta", country: "California, USA", lat: 41.3099, lng: -122.3106, date: "November 2022", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Springfield", country: "Oregon, USA", lat: 44.0462, lng: -123.0220, date: "November 2022", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Seattle", country: "Washington, USA", lat: 47.6062, lng: -122.3321, date: "November 2022", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Annual Thanksgiving trip with the Baek & Nicholls families." },
+
+  // ── 2023 ──────────────────────────────────────────────────
+  { destination: "San Francisco", country: "California, USA", lat: 37.7693, lng: -122.4662, date: "April 2023", who: ["Sai", "Dominic"], notes: "Academy of Sciences." },
+  { destination: "Fullerton, CA", country: "California, USA", lat: 33.8703, lng: -117.9253, date: "October 2023", who: ["Sai", "Dominic", "Baek family"], notes: "제사 (Jesa) — ancestral memorial rite." },
+  { destination: "San Diego", country: "California, USA", lat: 32.7157, lng: -117.1611, date: "October 2023", who: ["Sai", "Dominic", "Baek family", "Gospodnetich family"], notes: "Trip to San Diego." },
+  { destination: "Anaheim", country: "California, USA", lat: 33.8003, lng: -117.8827, date: "November 2023", who: ["Sai", "Dominic"], notes: "BlizzCon at the Anaheim Convention Center." },
+  { destination: "Mt. Shasta", country: "California, USA", lat: 41.3099, lng: -122.3106, date: "November 2023", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Springfield", country: "Oregon, USA", lat: 44.0462, lng: -123.0220, date: "November 2023", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Seattle", country: "Washington, USA", lat: 47.6062, lng: -122.3321, date: "November 2023", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Annual Thanksgiving trip with the Baek & Nicholls families." },
+
+  // ── 2024 ──────────────────────────────────────────────────
+  { destination: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503, date: "April 2024", who: ["Sai", "Dominic", "Baek family", "Gospodnetich family"], notes: "Flying SFO → NRT. Japan trip with the Baek & Gospodnetich families." },
+  { destination: "Seoul", country: "South Korea", lat: 37.5665, lng: 126.9780, date: "April 2024", who: ["Sai", "Dominic", "Baek family", "Gospodnetich family"], notes: "Flying HND → ICN. Korea leg of the Asia trip." },
+  { destination: "Mt. Shasta", country: "California, USA", lat: 41.3099, lng: -122.3106, date: "November 2024", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Springfield", country: "Oregon, USA", lat: 44.0462, lng: -123.0220, date: "November 2024", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Seattle", country: "Washington, USA", lat: 47.6062, lng: -122.3321, date: "November 2024", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Annual Thanksgiving trip with the Baek & Nicholls families." },
+
+  // ── 2025 ──────────────────────────────────────────────────
+  { destination: "Pasadena", country: "California, USA", lat: 34.1478, lng: -118.1445, date: "February 2025", who: ["Sai", "Dominic", "Sandi"], notes: "With Sandi." },
+  { destination: "Costa Mesa", country: "California, USA", lat: 33.6411, lng: -117.9187, date: "April 2025", who: ["Sai", "Dominic", "Sandi"], notes: "With Sandi." },
+  { destination: "Irwindale", country: "California, USA", lat: 34.1067, lng: -117.9359, date: "April 2025", who: ["Sai", "Dominic", "Flores family"], notes: "With the Flores family." },
+  { destination: "Irvine", country: "California, USA", lat: 33.6846, lng: -117.8265, date: "November 2025", who: ["Sai", "Dominic", "Flores family"], notes: "With the Flores family." },
+  { destination: "San Jose", country: "California, USA", lat: 37.3382, lng: -121.8863, date: "November 2025", who: ["Sai", "Dominic", "Kyle"], notes: "With Kyle." },
+  { destination: "Novato", country: "California, USA", lat: 38.1074, lng: -122.5697, date: "November 2025", who: ["Sai", "Dominic", "Kim"], notes: "With Kim." },
+  { destination: "Mt. Shasta", country: "California, USA", lat: 41.3099, lng: -122.3106, date: "November 2025", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Springfield", country: "Oregon, USA", lat: 44.0462, lng: -123.0220, date: "November 2025", who: ["Sai", "Dominic"], notes: "Thanksgiving road trip stop." },
+  { destination: "Seattle", country: "Washington, USA", lat: 47.6062, lng: -122.3321, date: "November 2025", who: ["Sai", "Dominic", "Baek family", "Nicholls family"], notes: "Annual Thanksgiving trip with the Baek & Nicholls families." },
+];
+
+// Extract unique years from TRIPS
+const YEARS = [...new Set(TRIPS.map(t => t.date.split(' ')[1]))].sort();
+let activeYear = 'all';
+
+// MAP
+const map = L.map('map', { center: [35, -100], zoom: 3, zoomControl: true, scrollWheelZoom: false });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+const pinIcon = L.divIcon({ className: '', html: '<div class="trip-pin"></div>', iconSize: [11, 11], iconAnchor: [5, 5], popupAnchor: [0, -9] });
+
+let markers = [];
+
+function getFiltered() {
+  return activeYear === 'all' ? TRIPS : TRIPS.filter(t => t.date.endsWith(activeYear));
+}
+
+function renderMap() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  const filtered = getFiltered();
+  filtered.forEach(trip => {
+    const m = L.marker([trip.lat, trip.lng], { icon: pinIcon }).addTo(map)
+      .bindPopup(`<strong style="font-family:sans-serif;font-size:13px">${trip.destination}</strong><br><span style="font-size:12px;color:#888">${trip.date}</span>`);
+    markers.push(m);
+  });
+  if (filtered.length > 0) {
+    map.fitBounds(filtered.map(t => [t.lat, t.lng]), { padding: [60, 60] });
+  }
+}
+
+function renderStats() {
+  const filtered = getFiltered();
+  document.getElementById('trip-count').textContent = filtered.length;
+  document.getElementById('place-count').textContent = new Set(filtered.map(t => t.destination)).size;
+}
+
+function renderLog() {
+  const logEl = document.getElementById('trip-log');
+  const filtered = getFiltered().slice().reverse();
+  if (filtered.length === 0) {
+    logEl.innerHTML = `<div class="empty-state"><span class="empty-icon">✈️</span><p class="empty-title">No trips for this year</p></div>`;
+    return;
+  }
+  logEl.innerHTML = `
+    <table class="trip-table">
+      <thead><tr>
+        <th>Destination</th><th>Date</th><th>Who</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(t => `
+          <tr>
+            <td><div class="trip-destination">${t.destination}</div><div class="trip-country">${t.country}</div></td>
+            <td><span class="trip-date">${t.date}</span></td>
+            <td><div class="trip-who">${t.who.map(p => `<span class="who-tag">${p}</span>`).join('')}</div></td>
+            <td><span class="trip-notes">${t.notes || '—'}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderFilters() {
+  const wrap = document.getElementById('year-filters');
+  const allBtn = `<button class="year-btn ${activeYear === 'all' ? 'active' : ''}" data-year="all">All</button>`;
+  const yearBtns = YEARS.map(y =>
+    `<button class="year-btn ${activeYear === y ? 'active' : ''}" data-year="${y}">${y}</button>`
+  ).join('');
+  wrap.innerHTML = allBtn + yearBtns;
+  wrap.querySelectorAll('.year-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeYear = btn.dataset.year;
+      renderFilters();
+      renderMap();
+      renderStats();
+      renderLog();
+    });
+  });
+}
+
+renderFilters();
+renderMap();
+renderStats();
+renderLog();
+</script>
+</body>
+</html>
