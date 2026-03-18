@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule — The Gospodnetich Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #100e0b;
+    --bg2:     #17140f;
+    --bg3:     #1f1b14;
+    --border:  rgba(210,185,145,0.1);
+    --border2: rgba(210,185,145,0.18);
+    --text:    #e6dfd3;
+    --muted:   #8a8070;
+    --faint:   #4a4438;
+    --ink:     #c8b48a;
+    --ink2:    #7a9e8a;
+    --serif:   'Playfair Display', Georgia, serif;
+    --body:    'Crimson Pro', Georgia, serif;
+    --mono:    'DM Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 17px; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(16,14,11,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2.5rem; height: 58px;
+  }
+  .nav-logo { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); letter-spacing: 0.02em; text-decoration: none; }
+  .nav-logo .tld { color: var(--ink); font-style: italic; }
+  .nav-rule { width: 1px; height: 16px; background: var(--border2); margin: 0 1.4rem; flex-shrink: 0; }
+  .nav-tagline { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.15em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; margin-left: auto; }
+  .nav-links a { font-family: var(--mono); font-size: 10px; color: var(--muted); text-decoration: none; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+
+  .page-header { max-width: 1100px; margin: 0 auto; padding: 5rem 2.5rem 3rem; }
+  .page-stamp { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink2); border: 1px solid rgba(122,158,138,0.35); border-radius: 2px; padding: 4px 10px; margin-bottom: 1.5rem; }
+  .page-title { font-family: var(--serif); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 400; line-height: 1.05; }
+  .page-title em { color: var(--ink); font-style: italic; }
+  .page-rule { width: 48px; height: 1px; background: var(--border2); margin: 1.5rem 0; }
+  .page-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 480px; font-style: italic; }
+
+  .ruled-divider { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
+  .ruled-divider::before, .ruled-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .ruled-divider span { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+
+  /* CALENDAR GRID */
+  .cal-wrap { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; }
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .cal-month { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; font-style: italic; color: var(--ink); }
+  .cal-btn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 2px; padding: 6px 12px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+  .cal-btn:hover { color: var(--ink); border-color: var(--border2); }
+
+  .cal-grid { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--bg3); border-bottom: 1px solid var(--border); }
+  .cal-day-name { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); text-align: center; padding: 0.6rem 0; }
+  .cal-cells { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-cell {
+    height: 110px; padding: 0.4rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: var(--bg2); transition: background 0.15s; position: relative;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .cal-cell:nth-child(7n) { border-right: none; }
+  .cal-cell:hover { background: var(--bg3); }
+  .cal-cell.today { background: var(--bg3); }
+  .cal-cell.today .cell-num { color: var(--ink); }
+  .cal-cell.other-month { opacity: 0.3; }
+  .cell-num { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-bottom: 3px; flex-shrink: 0; }
+  .cal-cell.today .cell-num::after { content: ' ◆'; color: var(--ink); font-size: 8px; }
+  .cell-events { display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1; min-height: 0; }
+
+  /* EVENTS */
+  .event-dot {
+    font-family: var(--mono); font-size: 8px; line-height: 1.3;
+    padding: 2px 4px; border-radius: 2px;
+    white-space: normal; overflow: hidden;
+    word-break: break-word;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    cursor: default; flex-shrink: 0;
+  }
+  .event-dot.cat-personal { background: rgba(200,180,138,0.15); color: var(--ink); border-left: 2px solid var(--ink); }
+  .event-dot.cat-together { background: rgba(122,158,138,0.15); color: var(--ink2); border-left: 2px solid var(--ink2); }
+  .event-dot.cat-important { background: rgba(160,85,64,0.15); color: #c8785a; border-left: 2px solid #a05540; }
+
+  /* UPCOMING LIST */
+  .upcoming-wrap { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; }
+  .event-list { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .event-row { display: grid; grid-template-columns: 80px 1fr auto; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg2); gap: 1rem; transition: background 0.15s; }
+  .event-row:last-child { border-bottom: none; }
+  .event-row:hover { background: var(--bg3); }
+  .event-date-col { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.08em; line-height: 1.5; }
+  .event-date-col strong { display: block; font-family: var(--serif); font-size: 1.3rem; font-weight: 400; color: var(--ink); font-style: italic; line-height: 1; }
+  .event-name { font-size: 16px; color: var(--text); }
+  .event-sub { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 2px; }
+  .event-who-tag { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+
+  .empty-state { text-align: center; padding: 3.5rem 2rem; border: 1px solid var(--border); border-radius: 4px; }
+  .empty-icon { font-size: 2rem; margin-bottom: 1rem; display: block; opacity: 0.3; }
+  .empty-title { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; color: var(--text); font-style: italic; margin-bottom: 0.5rem; }
+  .empty-sub { font-family: var(--mono); font-size: 10px; color: var(--faint); line-height: 1.7; letter-spacing: 0.05em; }
+
+  footer { max-width: 1100px; margin: 5rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
+  .footer-mark { color: var(--ink2); margin: 0 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
+  <div class="nav-rule"></div>
+  <span class="nav-tagline">Family Log</span>
+  <ul class="nav-links">
+    <li><a href="schedule.html" class="active">Schedule</a></li>
+    <li><a href="chronicle.html">Chronicle</a></li>
+    <li><a href="sidequests.html">Side Quests</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <span class="page-stamp">Day to Day</span>
+  <h1 class="page-title">The <em>Schedule</em></h1>
+  <div class="page-rule"></div>
+  <p class="page-sub">What's coming up, what's happening now, and how our time is being spent.</p>
+</div>
+
+<div class="ruled-divider"><span>Calendar</span></div>
+
+<div class="cal-wrap">
+  <div class="cal-nav">
+    <button class="cal-btn" id="prev-btn">← Prev</button>
+    <span class="cal-month" id="cal-month-label"></span>
+    <button class="cal-btn" id="next-btn">Next →</button>
+  </div>
+  <div class="cal-grid">
+    <div class="cal-days-header">
+      <div class="cal-day-name">Mon</div>
+      <div class="cal-day-name">Tue</div>
+      <div class="cal-day-name">Wed</div>
+      <div class="cal-day-name">Thu</div>
+      <div class="cal-day-name">Fri</div>
+      <div class="cal-day-name">Sat</div>
+      <div class="cal-day-name">Sun</div>
+    </div>
+    <div class="cal-cells" id="cal-cells"></div>
+  </div>
+</div>
+
+<div class="ruled-divider" style="margin-top:3rem"><span>Upcoming Events</span></div>
+
+<div class="upcoming-wrap">
+  <div id="upcoming-list"></div>
+</div>
+
+<footer>
+  <span>gospodneti.ch</span>
+  <span>Private<span class="footer-mark">·</span>2026</span>
+</footer>
+
+<script>
+// ============================================================
+// ADD YOUR EVENTS HERE
+// date: 'YYYY-MM-DD', cat: 'personal' | 'together' | 'important'
+// ============================================================
+const EVENTS = [
+  { date: '2026-03-03', title: "Lunch w/ Mom @ Wood Ranch", who: "Sai, Dominic & Mom", cat: "together", note: "Wood Ranch BBQ & Grill, Cerritos, CA" },
+  { date: '2026-03-08', title: "Day with Kyle in Pasadena", who: "Sai & Dominic", cat: "together", note: "Spending the day with Dom's older brother in Pasadena, CA." },
+  { date: '2026-03-10', title: "Lunch w/ Mom @ Rock & Brews", who: "Sai, Dominic & Mom", cat: "together", note: "Rock & Brews, Beach Blvd, Buena Park, CA" },
+  { date: '2026-03-14', title: "Sister arrives ✈ SNA → Fullerton", who: "Sai", cat: "important", note: "Arriving at SNA ~1pm, heading to the apartment." },
+  { date: '2026-03-14', title: "Dinner @ Wadaya", who: "Sai, Dominic & Sister", cat: "together", note: "6:30pm · Wadaya, Fullerton, CA" },
+  { date: '2026-03-15', title: "Coffee @ Tous Les Jours", who: "Sai & Sister", cat: "personal", note: "10am · Tous Les Jours, Brea, CA" },
+  { date: '2026-03-17', title: "Lunch w/ Mom @ Tang", who: "Sai, Dominic & Mom", cat: "together", note: "Tang, Malvern Ave, Fullerton, CA" },
+  { date: '2026-03-25', title: "Lunch w/ Mom @ Myungin Dumplings", who: "Sai, Dominic & Mom", cat: "together", note: "Myungin Dumplings, Beach Blvd, Buena Park, CA" },
+  { date: '2026-03-27', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 1 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
+  { date: '2026-03-28', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 2 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
+  { date: '2026-03-29', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 3 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
+];
+
+// ============================================================
+// CALENDAR RENDERING
+// ============================================================
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let current = new Date();
+current.setDate(1);
+
+function eventsByDate() {
+  const map = {};
+  EVENTS.forEach(e => {
+    if (!map[e.date]) map[e.date] = [];
+    map[e.date].push(e);
+  });
+  return map;
+}
+
+function renderCalendar() {
+  const year = current.getFullYear();
+  const month = current.getMonth();
+  const today = new Date();
+  const byDate = eventsByDate();
+
+  document.getElementById('cal-month-label').textContent = MONTHS[month] + ' ' + year;
+
+  const firstDay = (new Date(year, month, 1).getDay() + 6) % 7; // 0=Mon … 6=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+
+  const cells = document.getElementById('cal-cells');
+  cells.innerHTML = '';
+
+  // Prev month padding
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell other-month';
+    cell.innerHTML = `<div class="cell-num">${daysInPrev - i}</div>`;
+    cells.appendChild(cell);
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    cell.className = 'cal-cell' + (isToday ? ' today' : '');
+    let html = `<div class="cell-num">${d}</div><div class="cell-events">`;
+    if (byDate[dateStr]) {
+      byDate[dateStr].forEach(e => {
+        html += `<div class="event-dot cat-${e.cat}" title="${e.title}">${e.title}</div>`;
+      });
+    }
+    html += `</div>`;
+    cell.innerHTML = html;
+    cells.appendChild(cell);
+  }
+
+  // Next month padding
+  const totalCells = firstDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remaining; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell other-month';
+    cell.innerHTML = `<div class="cell-num">${i}</div>`;
+    cells.appendChild(cell);
+  }
+}
+
+document.getElementById('prev-btn').addEventListener('click', () => {
+  current.setMonth(current.getMonth() - 1);
+  renderCalendar();
+});
+document.getElementById('next-btn').addEventListener('click', () => {
+  current.setMonth(current.getMonth() + 1);
+  renderCalendar();
+});
+
+renderCalendar();
+
+// ============================================================
+// UPCOMING EVENTS LIST
+// ============================================================
+const upcomingEl = document.getElementById('upcoming-list');
+const todayStr = new Date().toISOString().split('T')[0];
+const upcoming = EVENTS
+  .filter(e => e.date >= todayStr)
+  .sort((a, b) => a.date.localeCompare(b.date))
+  .slice(0, 8);
+
+if (upcoming.length === 0) {
+  upcomingEl.innerHTML = `
+    <div class="empty-state">
+      <span class="empty-icon">📅</span>
+      <p class="empty-title">Nothing scheduled yet</p>
+      <p class="empty-sub">Add events to the EVENTS array in schedule.html and they'll appear here and on the calendar.</p>
+    </div>`;
+} else {
+  const list = document.createElement('div');
+  list.className = 'event-list';
+  upcoming.forEach(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    const day = d.getDate();
+    const mon = MONTHS[d.getMonth()].slice(0, 3).toUpperCase();
+    const row = document.createElement('div');
+    row.className = 'event-row';
+    row.innerHTML = `
+      <div class="event-date-col"><strong>${day}</strong>${mon}</div>
+      <div>
+        <div class="event-name">${e.title}</div>
+        ${e.note ? `<div class="event-sub">${e.note}</div>` : ''}
+      </div>
+      ${e.who ? `<span class="event-who-tag">${e.who}</span>` : ''}
+    `;
+    list.appendChild(row);
+  });
+  upcomingEl.appendChild(list);
+}
+</script>
+</body>
+</html>
