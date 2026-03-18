@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Side Quests — The Gospodnetich Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #100e0b;
+    --bg2:     #17140f;
+    --bg3:     #1f1b14;
+    --border:  rgba(210,185,145,0.1);
+    --border2: rgba(210,185,145,0.18);
+    --text:    #e6dfd3;
+    --muted:   #8a8070;
+    --faint:   #4a4438;
+    --ink:     #c8b48a;
+    --ink2:    #7a9e8a;
+    --serif:   'Playfair Display', Georgia, serif;
+    --body:    'Crimson Pro', Georgia, serif;
+    --mono:    'DM Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 17px; font-weight: 300; min-height: 100vh; overflow-x: hidden; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(16,14,11,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2.5rem; height: 58px;
+  }
+  .nav-logo { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); letter-spacing: 0.02em; text-decoration: none; }
+  .nav-logo .tld { color: var(--ink); font-style: italic; }
+  .nav-rule { width: 1px; height: 16px; background: var(--border2); margin: 0 1.4rem; flex-shrink: 0; }
+  .nav-tagline { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.15em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; margin-left: auto; }
+  .nav-links a { font-family: var(--mono); font-size: 10px; color: var(--muted); text-decoration: none; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+
+  /* KIKI IDLE — sits next to page title */
+  .page-title-row { display: flex; align-items: center; gap: 1.25rem; }
+  @keyframes breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .kiki-idle { image-rendering: pixelated; display: block; animation: breathe 3s ease-in-out infinite; }
+
+  /* PERSON COLUMN HEADERS — name on left, sprite on right */
+  canvas { image-rendering: pixelated; display: block; }
+
+  /* PAGE */
+  .page-header { max-width: 1100px; margin: 0 auto; padding: 4rem 2.5rem 3rem; }
+  .page-stamp { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink2); border: 1px solid rgba(122,158,138,0.35); border-radius: 2px; padding: 4px 10px; margin-bottom: 1.5rem; }
+  .page-title { font-family: var(--serif); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 400; line-height: 1.05; }
+  .page-title em { color: var(--ink); font-style: italic; }
+  .page-rule { width: 48px; height: 1px; background: var(--border2); margin: 1.5rem 0; }
+  .page-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 480px; font-style: italic; }
+
+  .ruled-divider { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
+  .ruled-divider::before, .ruled-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .ruled-divider span { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+
+  /* MAIN TWO-COLUMN LAYOUT — fully independent columns with gap */
+  .duo-wrap { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  .person-col { display: flex; flex-direction: column; gap: 1rem; }
+  .person-col-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border2); margin-bottom: 0.25rem; }
+  .person-col-name { font-family: var(--serif); font-size: 1.4rem; font-weight: 400; font-style: italic; color: var(--ink); }
+
+  /* INDIVIDUAL CONTAINERS within each column */
+  .col-block { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .col-block-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); padding: 0.65rem 1.25rem; background: var(--bg3); border-bottom: 1px solid var(--border); }
+  .col-block-body { padding: 1.25rem; background: var(--bg); }
+
+  /* GAME CARDS */
+  .game-list { display: flex; flex-direction: column; gap: 8px; }
+  .game-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
+  .game-card:hover { border-color: var(--border2); }
+  .game-banner { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .game-banner img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+  .game-banner-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: var(--bg3); color: var(--faint); }
+  .game-info { padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
+  .game-platform { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); margin-bottom: 3px; }
+  .game-title { font-family: var(--serif); font-size: 1.05rem; font-weight: 400; color: var(--text); line-height: 1.2; }
+  .game-note { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 4px; line-height: 1.5; }
+  .status { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; display: inline-block; margin-top: 5px; }
+  .status-playing { background: rgba(122,158,138,0.15); color: var(--ink2); border: 1px solid rgba(122,158,138,0.3); }
+  .status-paused  { background: rgba(200,180,138,0.1); color: var(--ink); border: 1px solid rgba(200,180,138,0.25); }
+  .empty-col { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.06em; line-height: 1.7; padding: 0.5rem 0; }
+
+  /* PROFILES — split cards matching duo layout */
+  .profiles-wrap { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  .profile-col { display: flex; flex-direction: column; gap: 1rem; }
+  .profile-col-header { font-family: var(--serif); font-size: 1.4rem; font-weight: 400; font-style: italic; color: var(--ink); padding-bottom: 0.75rem; border-bottom: 1px solid var(--border2); margin-bottom: 0.25rem; }
+  .profile-card { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
+  .profile-card:hover { border-color: var(--border2); }
+  .profile-card-header { display: flex; align-items: center; gap: 8px; padding: 0.75rem 1.25rem; background: var(--bg3); border-bottom: 1px solid var(--border); }
+  .service-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .dot-steam   { background: #4a90d9; }
+  .dot-battle  { background: #00aeff; }
+  .dot-discord { background: #7289da; }
+  .profile-service-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .profile-card-body { padding: 1rem 1.25rem; background: var(--bg2); }
+  .handle { font-family: var(--mono); font-size: 13px; color: var(--ink); }
+  .handle a { color: inherit; text-decoration: none; }
+  .handle a:hover { color: var(--text); }
+  .handle-empty { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+
+  footer { max-width: 1100px; margin: 5rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
+  .footer-mark { color: var(--ink2); margin: 0 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
+  <div class="nav-rule"></div>
+  <span class="nav-tagline">Family Log</span>
+  <ul class="nav-links">
+    <li><a href="schedule.html">Schedule</a></li>
+    <li><a href="chronicle.html">Chronicle</a></li>
+    <li><a href="sidequests.html" class="active">Side Quests</a></li>
+  </ul>
+</nav>
+
+<div class="page-header">
+  <span class="page-stamp">Active Pursuits</span>
+  <div class="page-title-row">
+    <h1 class="page-title">Side <em>Quests</em></h1>
+    <canvas id="kiki-canvas" class="kiki-idle"></canvas>
+  </div>
+  <div class="page-rule"></div>
+  <p class="page-sub">What we're playing, what we're waiting for, and whatever else we're chasing down.</p>
+</div>
+
+<div class="ruled-divider"><span>Games</span></div>
+
+<!-- Two fully independent columns -->
+<div class="duo-wrap">
+  <div class="person-col" id="sai-col">
+    <div class="person-col-header">
+      <span class="person-col-name">Sai</span>
+      <canvas id="sai-canvas"></canvas>
+    </div>
+    <!-- injected by JS -->
+  </div>
+  <div class="person-col" id="dom-col">
+    <div class="person-col-header">
+      <span class="person-col-name">Dominic</span>
+      <canvas id="dom-canvas"></canvas>
+    </div>
+    <!-- injected by JS -->
+  </div>
+</div>
+
+<div class="ruled-divider" style="margin-top:3rem"><span>Find Us Online</span></div>
+
+<div class="profiles-wrap">
+  <div class="profile-col" id="sai-profiles"></div>
+  <div class="profile-col" id="dom-profiles"></div>
+</div>
+
+<footer>
+  <span>gospodneti.ch</span>
+  <span>Private<span class="footer-mark">·</span>2026</span>
+</footer>
+
+<script>
+// ============================================================
+// YOUR GAMES
+// ============================================================
+const SAI_PLAYING = [
+  { title: "World of Warcraft: Midnight", platform: "PC · Battle.net", status: "playing", note: "The Worldsoul Saga continues — defending the Sunwell in Quel'Thalas.", cover: "wow-midnight" },
+];
+const DOM_PLAYING = [
+  { title: "World of Warcraft: Midnight", platform: "PC · Battle.net", status: "playing", note: "Playing alongside Sai — for the Horde? For the Alliance? TBD.", cover: "wow-midnight" },
+  { title: "Warframe", platform: "PC · Steam", status: "playing", note: "Free to play, impossible to stop.", cover: "warframe" },
+  { title: "S.T.A.L.K.E.R. 2: Heart of Chornobyl", platform: "PC · Steam", status: "playing", note: "Surviving the Zone one emission at a time.", cover: "stalker2" },
+];
+const SAI_WISHLIST = [
+  // { title: "Silksong", platform: "TBD", note: "...waiting." },
+];
+const DOM_WISHLIST = [
+  // { title: "Elden Ring DLC", platform: "PC" },
+];
+
+// ============================================================
+// YOUR PROFILES
+// ============================================================
+const PROFILES = [
+  { service: 'Steam',      dotClass: 'dot-steam',
+    sai: { handle: '사이', url: 'https://steamcommunity.com/id/saithepyro' }, dom: { handle: '', url: '' } },
+  { service: 'Battle.net', dotClass: 'dot-battle',
+    sai: { handle: 'Sai#1429', url: '' }, dom: { handle: '', url: '' } },
+  { service: 'Discord',    dotClass: 'dot-discord',
+    sai: { handle: 'sai.ri', url: '' }, dom: { handle: '', url: '' } },
+];
+
+// ============================================================
+// 32-BIT SPRITES
+// Each "pixel" = 2px. Grids are 20 cols × 32 rows (people)
+// and 18 cols × 14 rows (Kiki).
+// We build two walk frames per character.
+// ============================================================
+const PS = 2; // pixel size
+
+// ---- SAI palette ----
+// Black hair with copper/brown balayage highlights
+const SAI = {
+  _:    null,
+  sk:   '#dba882', // skin
+  sk2:  '#c8906a', // shadow skin
+  hb:   '#0e0a10', // base hair (near-black)
+  hc:   '#7a4020', // copper balayage
+  hm:   '#3a1a08', // mid hair
+  eye:  '#3a2860', // dark violet-brown eye
+  brow: '#2a1808',
+  lip:  '#c07060',
+  hd:   '#c8b8e0', // hoodie light lavender
+  hd2:  '#a090c0', // hoodie mid
+  hd3:  '#806898', // hoodie shadow
+  pt:   '#2e2a42', // pants
+  pt2:  '#1e1a2e',
+  sh:   '#18140e', // shoe
+  sh2:  '#28201a',
+  wh:   '#e8e0f0', // white (eyes)
+};
+
+// ---- DOMINIC palette ----
+const DOM = {
+  _:    null,
+  sk:   '#cc8858', // skin
+  sk2:  '#b07040',
+  hr:   '#4a2810', // brown hair
+  hr2:  '#6a3c18', // highlight
+  hr3:  '#2e1808', // shadow
+  brd:  '#3a2010', // beard
+  brd2: '#281808',
+  eye:  '#3a6020', // green eye
+  brow: '#3a2010',
+  wh:   '#e8e8e0',
+  ts:   '#2e4030', // dark green shirt
+  ts2:  '#1e2e22',
+  ts3:  '#3e5040',
+  pt:   '#1e2030',
+  pt2:  '#141420',
+  sh:   '#100e08',
+  sh2:  '#1e1c14',
+};
+
+// ---- KIKI palette ---- dilute tortie: grey-brown, cream, patches
+const KK = {
+  _:    null,
+  bd:   '#8a7a68', // main body grey-brown
+  bd2:  '#6a5a4a', // shadow
+  pt:   '#7a5a3a', // warm brown patch
+  pt2:  '#9a7050',
+  ch:   '#d8cdb8', // cream chest
+  ch2:  '#c0b49e',
+  st:   '#504030', // dark stripes
+  ey:   '#8aaa30', // yellow-green eye
+  ey2:  '#6a8a18',
+  ns:   '#d07878', // pink nose
+  wh:   '#e8e4d8', // white muzzle
+  ol:   '#201808', // outline
+  er:   '#c89080', // inner ear
+};
+
+// Helper: draw a 2D pixel grid onto a canvas context
+function drawGrid(ctx, grid, ps) {
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      if (grid[r][c]) {
+        ctx.fillStyle = grid[r][c];
+        ctx.fillRect(c * ps, r * ps, ps, ps);
+      }
+}
+
+// ---- SAI frames (20 × 32) ----
+function saiGrid(frame) {
+  const s = SAI, _ = null;
+  // shared body (rows 0–19), legs differ per frame
+  const top = [
+    // row 0–1: hair top
+    [_,_,_,_,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,_,_,_,_,_,_,_],
+    [_,_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,_,_,_,_,_,_],
+    // row 2–3: hair sides + forehead
+    [_,_,s.hb,s.hb,s.hm,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hm,s.hb,s.hb,_,_,_,_,_],
+    [_,_,s.hb,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hb,_,_,_,_,_],
+    // row 4–5: eyes
+    [_,_,s.hb,s.brow,s.brow,s.sk,s.wh,s.eye,s.sk,s.sk,s.wh,s.eye,s.sk,s.brow,s.hb,_,_,_,_,_],
+    [_,_,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
+    // row 6: nose/mouth
+    [_,_,s.hb,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
+    [_,_,s.hb,s.sk,s.sk,s.sk,s.sk,s.lip,s.lip,s.lip,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
+    // row 8: long hair falls down sides
+    [_,s.hb,s.hb,s.hc,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hc,s.hb,s.hb,_,_,_,_],
+    [_,s.hb,s.hc,s.hm,s.hb,_,_,_,_,_,_,_,_,s.hb,s.hm,s.hc,s.hb,_,_,_],
+    // row 10–14: hoodie body
+    [_,s.hb,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hb,_,_,_,_],
+    [s.hb,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hb,_,_,_],
+    [s.hb,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hb,_,_,_],
+    [s.hb,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd,s.hd,s.hb,_,_,_],
+    [s.hb,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hb,_,_,_],
+    // row 15: hoodie pocket
+    [_,s.hb,s.hd,s.hd,s.hd,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd,s.hd,s.hb,_,_,_,_],
+    [_,s.hb,s.hc,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hc,s.hb,_,_,_,_],
+    [_,_,s.hb,s.hc,s.hm,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hm,s.hc,s.hb,_,_,_,_,_],
+    // row 18–19: waist
+    [_,_,_,s.hb,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.hb,_,_,_,_,_,_],
+    [_,_,_,_,s.pt,s.pt2,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+  ];
+
+  const legs_f1 = [
+    // rows 20–27: legs frame 1 (right fwd, left back)
+    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
+    [_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+    [_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_],
+    [_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_],
+    [_,s.sh,s.sh,s.sh2,_,_,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,s.sh,s.sh,s.sh,_,_,_,_,_,_,_,s.sh,s.sh2,s.sh,_,_,_,_,_,_],
+  ];
+  const legs_f2 = [
+    // frame 2 (left fwd, right back)
+    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
+    [_,_,s.pt,s.pt,s.pt2,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,s.pt,s.pt,s.pt,_,_,_,s.sh,s.sh,s.sh2,_,_,_,_,_,_,_],
+    [_,_,_,s.sh,s.sh2,s.sh,_,_,_,_,s.sh,s.sh,s.sh,_,_,_,_,_,_,_],
+  ];
+
+  const pad = Array(4).fill(null).map(() => Array(20).fill(null));
+  return [...top, ...(frame === 0 ? legs_f1 : legs_f2), ...pad];
+}
+
+// ---- DOMINIC frames (20 × 32) ----
+function domGrid(frame) {
+  const d = DOM, _ = null;
+  const top = [
+    [_,_,_,_,d.hr3,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr3,_,_,_,_,_,_,_],
+    [_,_,_,d.hr3,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr3,_,_,_,_,_,_],
+    [_,_,d.hr3,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,d.hr3,_,_,_,_,_],
+    [_,_,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,_,_,_,_,_],
+    [_,_,d.hr,d.brow,d.brow,d.sk,d.wh,d.eye,d.sk,d.sk,d.wh,d.eye,d.sk,d.brow,d.hr,_,_,_,_,_],
+    [_,_,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,_,_,_,_,_],
+    [_,_,d.hr,d.sk,d.sk2,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,_,_,_,_,_],
+    // beard rows
+    [_,_,d.hr,d.brd,d.brd,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.brd,d.brd,d.hr,_,_,_,_,_],
+    [_,_,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,_,_,_,_,_],
+    [_,_,d.brd2,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd2,_,_,_,_,_],
+    // shirt
+    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
+    [d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_],
+    [d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_],
+    [d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts2,d.ts,d.ts,_,_,_],
+    [d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_],
+    [_,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,_,_,_,_],
+    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
+    [_,_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
+    [_,_,_,_,d.pt,d.pt2,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+  ];
+
+  const legs_f1 = [
+    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
+    [_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+    [_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_],
+    [_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_],
+    [_,d.sh,d.sh,d.sh2,_,_,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,d.sh,d.sh,d.sh,_,_,_,_,_,_,_,d.sh,d.sh2,d.sh,_,_,_,_,_,_],
+  ];
+  const legs_f2 = [
+    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
+    [_,_,d.pt,d.pt,d.pt2,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,_,d.pt,d.pt,d.pt,_,_,_,d.sh,d.sh,d.sh2,_,_,_,_,_,_,_],
+    [_,_,_,d.sh,d.sh2,d.sh,_,_,_,_,d.sh,d.sh,d.sh,_,_,_,_,_,_,_],
+  ];
+
+  const pad = Array(4).fill(null).map(() => Array(20).fill(null));
+  return [...top, ...(frame === 0 ? legs_f1 : legs_f2), ...pad];
+}
+
+// ---- KIKI frames (18 × 14) — proper cat silhouette ----
+function kikiGrid(frame) {
+  const k = KK, _ = null;
+  // Frame 1: walking, one leg fwd
+  const f1 = [
+    // ears (row 0–1)
+    [_,_,k.ol,k.ol,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_],
+    // head top (row 2)
+    [_,k.ol,k.bd2,k.bd,k.bd,k.ol,k.ol,k.ol,k.ol,k.bd,k.bd,k.bd2,k.ol,_,_,_,_,_],
+    // face (row 3–5)
+    [k.ol,k.bd,k.pt,k.bd,k.ey,k.wh,k.wh,k.wh,k.wh,k.ey,k.bd,k.pt,k.bd,k.ol,_,_,_,_],
+    [k.ol,k.bd,k.bd,k.bd2,k.bd,k.wh,k.ns,k.wh,k.bd,k.bd2,k.bd,k.bd,k.bd,k.ol,_,_,_,_],
+    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.ol,_,_,_,_],
+    // neck/chest (row 6–7)
+    [_,k.ol,k.bd,k.ch2,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch2,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.pt,k.bd,k.ch,k.ch2,k.ch,k.ch,k.ch2,k.ch,k.bd,k.pt,k.ol,_,_,_,_,_],
+    // body (row 8–9)
+    [_,k.ol,k.bd,k.st,k.bd,k.bd,k.bd2,k.bd2,k.bd,k.bd,k.st,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.bd2,k.bd,k.pt,k.bd,k.bd,k.bd,k.bd,k.pt,k.bd,k.bd2,k.ol,_,_,_,_,_],
+    // legs frame 1 — right fwd
+    [_,_,k.ol,k.bd,k.bd,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [_,_,k.ol,k.bd2,k.ol,_,_,_,_,k.ol,k.bd2,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.ol,k.ol,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  ];
+  // Frame 2: opposite legs
+  const f2 = [
+    [_,_,k.ol,k.ol,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.bd2,k.bd,k.bd,k.ol,k.ol,k.ol,k.ol,k.bd,k.bd,k.bd2,k.ol,_,_,_,_,_],
+    [k.ol,k.bd,k.pt,k.bd,k.ey,k.wh,k.wh,k.wh,k.wh,k.ey,k.bd,k.pt,k.bd,k.ol,_,_,_,_],
+    [k.ol,k.bd,k.bd,k.bd2,k.bd,k.wh,k.ns,k.wh,k.bd,k.bd2,k.bd,k.bd,k.bd,k.ol,_,_,_,_],
+    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.ol,_,_,_,_],
+    [_,k.ol,k.bd,k.ch2,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch2,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.pt,k.bd,k.ch,k.ch2,k.ch,k.ch,k.ch2,k.ch,k.bd,k.pt,k.ol,_,_,_,_,_],
+    [_,k.ol,k.bd,k.st,k.bd,k.bd,k.bd2,k.bd2,k.bd,k.bd,k.st,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.bd2,k.bd,k.pt,k.bd,k.bd,k.bd,k.bd,k.pt,k.bd,k.bd2,k.ol,_,_,_,_,_],
+    // legs frame 2 — left fwd
+    [_,_,k.ol,k.bd,k.bd,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [_,_,_,k.ol,k.bd2,k.ol,_,_,k.ol,k.bd2,k.ol,_,_,_,_,_,_,_],
+    [_,_,_,_,k.ol,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,k.ol,k.ol,k.ol,_,_,_,_,_,_,_],
+  ];
+  return frame === 0 ? f1 : f2;
+}
+
+function attachSprite(canvasEl, gridFn, cols, rows, walk) {
+  canvasEl.width  = cols * PS;
+  canvasEl.height = rows * PS;
+  canvasEl.style.width  = (cols * PS) + 'px';
+  canvasEl.style.height = (rows * PS) + 'px';
+  const ctx = canvasEl.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  let frame = 0;
+  function tick() {
+    ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    drawGrid(ctx, gridFn(frame), PS);
+    if (walk) frame = (frame + 1) % 2;
+  }
+  tick();
+  if (walk) setInterval(tick, 300);
+}
+
+// ============================================================
+// GAME COVER ART
+// Each cover is an 80×80 SVG. Add a new entry here per game.
+// key matches the 'cover' field in your game arrays above.
+// ============================================================
+const COVERS = {
+  'wow-midnight': {
+    url: 'https://blz-contentstack-images.akamaized.net/v3/assets/blt3452e3b114fab0cd/blt8d3cecf84f200ed6/68a4ed936a17f5492299906f/midnight-logo-1.png',
+    bg: '#0d0820'
+  },
+  'warframe': {
+    url: 'https://www-static.warframe.com/images/logo.png',
+    bg: '#050c10'
+  },
+  'stalker2': {
+    url: 'https://www.stalker2.com/stalker2/logos/logo-S2.png',
+    bg: '#0a0c08'
+  },
+};
+
+function gameCards(items) {
+  if (!items || items.length === 0)
+    return `<p class="empty-col">Nothing here yet.</p>`;
+  return `<div class="game-list">${items.map(g => {
+    const sc = g.status === 'playing' ? 'status-playing' : 'status-paused';
+    const sl = g.status === 'playing' ? '▶ Playing' : '⏸ Paused';
+    const cover = g.cover && COVERS[g.cover];
+    const bannerHtml = cover
+      ? `<div class="game-banner" style="background:${cover.bg}">
+           <img src="${cover.url}" alt="${g.title}"/>
+         </div>`
+      : `<div class="game-banner"><div class="game-banner-placeholder">🎮</div></div>`;
+    return `<div class="game-card">
+      ${bannerHtml}
+      <div class="game-info">
+        ${g.platform ? `<div class="game-platform">${g.platform}</div>` : ''}
+        <div class="game-title">${g.title}</div>
+        ${g.note ? `<div class="game-note">${g.note}</div>` : ''}
+        ${g.status ? `<span class="status ${sc}">${sl}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function colBlock(label, content) {
+  const block = document.createElement('div');
+  block.className = 'col-block';
+  block.innerHTML = `<div class="col-block-label">${label}</div><div class="col-block-body">${content}</div>`;
+  return block;
+}
+
+document.getElementById('sai-col').appendChild(colBlock('Currently Playing', gameCards(SAI_PLAYING)));
+document.getElementById('sai-col').appendChild(colBlock('Wishlist', gameCards(SAI_WISHLIST)));
+document.getElementById('dom-col').appendChild(colBlock('Currently Playing', gameCards(DOM_PLAYING)));
+document.getElementById('dom-col').appendChild(colBlock('Wishlist', gameCards(DOM_WISHLIST)));
+
+// Now safe to attach sprites — canvases are stable in the DOM
+attachSprite(document.getElementById('sai-canvas'),  saiGrid,  20, 32, true);
+attachSprite(document.getElementById('dom-canvas'),  domGrid,  20, 32, true);
+attachSprite(document.getElementById('kiki-canvas'), kikiGrid, 18, 14, false);
+
+// ============================================================
+// RENDER PROFILES AS INDEPENDENT CARDS PER PERSON
+// ============================================================
+const saiProfiles = document.getElementById('sai-profiles');
+const domProfiles = document.getElementById('dom-profiles');
+
+PROFILES.forEach(p => {
+  const saiH = p.sai.handle;
+  const domH = p.dom.handle;
+
+  const saiCard = document.createElement('div');
+  saiCard.className = 'profile-card';
+  saiCard.innerHTML = `
+    <div class="profile-card-header">
+      <span class="service-dot ${p.dotClass}"></span>
+      <span class="profile-service-name">${p.service}</span>
+    </div>
+    <div class="profile-card-body">
+      ${saiH
+        ? `<span class="handle">${p.sai.url ? `<a href="${p.sai.url}" target="_blank">${saiH}</a>` : saiH}</span>`
+        : `<span class="handle-empty">—</span>`}
+    </div>`;
+  saiProfiles.appendChild(saiCard);
+
+  const domCard = document.createElement('div');
+  domCard.className = 'profile-card';
+  domCard.innerHTML = `
+    <div class="profile-card-header">
+      <span class="service-dot ${p.dotClass}"></span>
+      <span class="profile-service-name">${p.service}</span>
+    </div>
+    <div class="profile-card-body">
+      ${domH
+        ? `<span class="handle">${p.dom.url ? `<a href="${p.dom.url}" target="_blank">${domH}</a>` : domH}</span>`
+        : `<span class="handle-empty">—</span>`}
+    </div>`;
+  domProfiles.appendChild(domCard);
+});
+</script>
+</body>
+</html>
