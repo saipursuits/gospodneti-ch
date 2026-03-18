@@ -167,17 +167,67 @@
 // date: 'YYYY-MM-DD', cat: 'personal' | 'together' | 'important'
 // ============================================================
 const EVENTS = [
+
+  // ── NATIONAL HOLIDAYS ──────────────────────────────────────
+  { date: '2026-01-01', title: "New Year's Day 🎆", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-01-19', title: "Martin Luther King Jr. Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-02-16', title: "Presidents' Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-05-25', title: "Memorial Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-06-19', title: "Juneteenth", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-07-04', title: "Independence Day 🎇", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-09-07', title: "Labor Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-10-12', title: "Columbus Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-11-11', title: "Veterans Day", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-11-26', title: "Thanksgiving 🦃", who: "", cat: "together", note: "Federal holiday" },
+  { date: '2026-12-25', title: "Christmas Day 🎄", who: "", cat: "together", note: "Federal holiday" },
+
+  // ── BIRTHDAYS ──────────────────────────────────────────────
+  { date: '2026-01-03', title: "JJ's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-01-12', title: "Dad's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-01-21', title: "Sporky's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-03-10', title: "Sister's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-04-04', title: "Max's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-04-12', title: "Mom's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-04-23', title: "Sai's Birthday 🎂", who: "Sai", cat: "important", note: "" },
+  { date: '2026-05-04', title: "Will's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-05-24', title: "Dom's Birthday 🎂", who: "Dominic", cat: "important", note: "" },
+  { date: '2026-06-30', title: "Kyle's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-07-28', title: "Blaine's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-08-28', title: "Sara's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-09-08', title: "Kim's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-10-09', title: "Mark's Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-11-13', title: "Kennis' Birthday 🎂", who: "", cat: "personal", note: "" },
+  { date: '2026-12-18', title: "Aaron's Birthday 🎂", who: "", cat: "personal", note: "" },
+
+  // ── MARCH ──────────────────────────────────────────────────
   { date: '2026-03-03', title: "Lunch w/ Mom @ Wood Ranch", who: "Sai, Dominic & Mom", cat: "together", note: "Wood Ranch BBQ & Grill, Cerritos, CA" },
   { date: '2026-03-08', title: "Day with Kyle in Pasadena", who: "Sai & Dominic", cat: "together", note: "Spending the day with Dom's older brother in Pasadena, CA." },
   { date: '2026-03-10', title: "Lunch w/ Mom @ Rock & Brews", who: "Sai, Dominic & Mom", cat: "together", note: "Rock & Brews, Beach Blvd, Buena Park, CA" },
   { date: '2026-03-14', title: "Sister arrives ✈ SNA → Fullerton", who: "Sai", cat: "important", note: "Arriving at SNA ~1pm, heading to the apartment." },
   { date: '2026-03-14', title: "Dinner @ Wadaya", who: "Sai, Dominic & Sister", cat: "together", note: "6:30pm · Wadaya, Fullerton, CA" },
   { date: '2026-03-15', title: "Coffee @ Tous Les Jours", who: "Sai & Sister", cat: "personal", note: "10am · Tous Les Jours, Brea, CA" },
+  { date: '2026-03-15', title: "Feed Rock & Roll 🐱", who: "Sai", cat: "personal", note: "Breakfast 6:30am · Dinner 6:45pm (Sandi's cats)" },
+  { date: '2026-03-16', title: "Feed Rock & Roll 🐱", who: "Sai", cat: "personal", note: "Breakfast 6:30am (Sandi's cats)" },
   { date: '2026-03-17', title: "Lunch w/ Mom @ Tang", who: "Sai, Dominic & Mom", cat: "together", note: "Tang, Malvern Ave, Fullerton, CA" },
   { date: '2026-03-25', title: "Lunch w/ Mom @ Myungin Dumplings", who: "Sai, Dominic & Mom", cat: "together", note: "Myungin Dumplings, Beach Blvd, Buena Park, CA" },
   { date: '2026-03-27', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 1 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
   { date: '2026-03-28', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 2 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
   { date: '2026-03-29', title: "WonderCon · Whisker Dreams Pop-up", who: "Sai, Dominic & Sandi", cat: "important", note: "Day 3 of 3 · Whisker Dreams @ WonderCon, Anaheim Convention Center" },
+
+  // ── APRIL ──────────────────────────────────────────────────
+  { date: '2026-04-03', title: "OC Japan Fair · Whisker Dreams", who: "Sai, Dominic & Flores family", cat: "important", note: "Day 1 of 3 · OC Japan Fair (Spring) @ OC Fairgrounds, Costa Mesa, CA" },
+  { date: '2026-04-04', title: "OC Japan Fair · Whisker Dreams", who: "Sai, Dominic & Flores family", cat: "important", note: "Day 2 of 3 · OC Japan Fair (Spring) @ OC Fairgrounds, Costa Mesa, CA" },
+  { date: '2026-04-05', title: "OC Japan Fair · Whisker Dreams", who: "Sai, Dominic & Flores family", cat: "important", note: "Day 3 of 3 · OC Japan Fair (Spring) @ OC Fairgrounds, Costa Mesa, CA" },
+  { date: '2026-04-11', title: "Renaissance Pleasure Faire 2026", who: "Sai, Dominic & Flores family", cat: "together", note: "Renaissance Pleasure Faire @ Irwindale, CA" },
+  { date: '2026-04-22', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 1 of 6" },
+  { date: '2026-04-23', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 2 of 6" },
+  { date: '2026-04-24', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 3 of 6" },
+  { date: '2026-04-25', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 4 of 6" },
+  { date: '2026-04-26', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 5 of 6" },
+  { date: '2026-04-27', title: "Parents in Mexico 🌴", who: "Mom & Dad", cat: "personal", note: "Day 6 of 6" },
+
+  // ── RECURRING ANNIVERSARY ──────────────────────────────────
+  { date: '2026-07-28', title: "💙 Anniversary", who: "Sai & Dominic", cat: "important", note: "5 years 🖤" },
 ];
 
 // ============================================================
