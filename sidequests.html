@@ -159,7 +159,6 @@
   <span class="page-stamp">Active Pursuits</span>
   <div class="page-title-row">
     <h1 class="page-title">Side <em>Quests</em></h1>
-    <canvas id="kiki-canvas" class="kiki-idle"></canvas>
   </div>
   <div class="page-rule"></div>
   <p class="page-sub">What we're playing and whatever else we're chasing down.</p>
@@ -172,14 +171,12 @@
   <div class="person-col" id="sai-col">
     <div class="person-col-header">
       <span class="person-col-name">Sai</span>
-      <canvas id="sai-canvas"></canvas>
     </div>
     <!-- injected by JS -->
   </div>
   <div class="person-col" id="dom-col">
     <div class="person-col-header">
       <span class="person-col-name">Dominic</span>
-      <canvas id="dom-canvas"></canvas>
     </div>
     <!-- injected by JS -->
   </div>
@@ -228,177 +225,7 @@ const PROFILES = [
     sai: { handle: 'sai.ri', tag: 'CULT' }, dom: { handle: 'platinumpancakes', tag: 'BAZZ' } },
 ];
 
-// ============================================================
-// SPRITES — Top-down RPG style (Stardew-inspired)
-// PS = 3px per pixel, 16 cols x 24 rows (people), 16 cols x 12 rows (Kiki)
-// ============================================================
-const PS = 3;
 
-const SAI = {
-  _:null, sk:'#dba882', sk2:'#c8906a',
-  hb:'#0e0a10', hc:'#7a4020',
-  eye:'#7050c8', wh:'#f0eeff',
-  hd:'#c0aedd', hd2:'#9878bb', hd3:'#7058a0',
-  pt:'#3a3060', sh:'#18140e',
-};
-
-const DOM = {
-  _:null, sk:'#cc8858', sk2:'#b07040',
-  hr:'#4a2810', hr2:'#6a3c18', hr3:'#2e1808',
-  brd:'#3a2010',
-  eye:'#3a6020', wh:'#e8ffe8',
-  ts:'#2e4030', ts2:'#1e2e22', ts3:'#4a6050',
-  pt:'#1e2030', sh:'#100e08',
-};
-
-const KK = {
-  _:null, bd:'#8a7a68', bd2:'#6a5a4a',
-  pt:'#7a5a3a', ch:'#d8cdb8',
-  st:'#504030', ey:'#8aaa30', ns:'#d07878',
-  ol:'#201808',
-};
-
-function saiGrid(frame) {
-  const s = SAI, _ = null;
-  const top = [
-    [_,_,_,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,_,_,_,_,_],
-    [_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,s.hb,s.hb,_,_,_,_],
-    [_,s.hb,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hb,_,_,_,_],
-    [_,s.hb,s.sk,s.sk,s.wh,s.eye,s.sk,s.wh,s.eye,s.sk,s.sk,s.hb,_,_,_,_],
-    [_,s.hb,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk2,s.sk,s.sk,s.sk,s.hb,_,_,_,_],
-    [_,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_],
-    [_,s.hb,s.hc,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hc,s.hb,_,_,_,_],
-    [_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hb,s.hc,s.hb,s.hb,_,_,_,_,_],
-    [_,_,_,_,s.sk,s.sk,s.sk,s.sk,s.sk,_,_,_,_,_,_,_],
-    [_,_,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,_,_,_,_,_],
-    [_,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,_,_,_,_],
-    [_,s.hd,s.hd2,s.hd,s.hd,s.hd3,s.hd3,s.hd,s.hd,s.hd2,s.hd,s.hd,_,_,_,_],
-    [_,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,_,_,_,_],
-    [_,_,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,_,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,_,_,_,_,_,_],
-  ];
-  const legs1 = [
-    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,s.pt,s.pt,s.pt,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_],
-    [_,s.sh,s.sh,s.sh,_,_,_,_,_,s.pt,s.pt,_,_,_,_,_],
-    [_,s.sh,s.sh,_,_,_,_,_,_,s.sh,s.sh,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  const legs2 = [
-    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,_,s.pt,s.pt,s.pt,_,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,_,s.sh,s.sh,s.sh,_,_,_,_,_,_],
-    [_,_,_,s.sh,s.sh,_,_,s.sh,s.sh,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  return [...top, ...(frame === 0 ? legs1 : legs2)];
-}
-
-function domGrid(frame) {
-  const d = DOM, _ = null;
-  const top = [
-    [_,_,_,d.hr3,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr3,_,_,_,_,_],
-    [_,_,d.hr3,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr,d.hr,d.hr3,_,_,_,_],
-    [_,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,_,_,_,_],
-    [_,d.hr,d.sk,d.sk,d.wh,d.eye,d.sk,d.wh,d.eye,d.sk,d.sk,d.hr,_,_,_,_],
-    [_,d.hr,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk2,d.sk,d.sk,d.sk,d.hr,_,_,_,_],
-    [_,d.hr,d.brd,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk,d.sk,d.brd,d.hr,_,_,_,_],
-    [_,d.hr,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.hr,_,_,_,_],
-    [_,_,d.hr,d.hr,d.brd,d.hr,d.hr,d.brd,d.hr,d.hr,d.hr,_,_,_,_,_],
-    [_,_,_,_,d.sk,d.sk,d.sk,d.sk,d.sk,_,_,_,_,_,_,_],
-    [_,_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_,_],
-    [_,d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,_,_,_,_],
-    [_,d.ts,d.ts2,d.ts,d.ts,d.ts3,d.ts3,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_,_],
-    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
-    [_,_,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
-  ];
-  const legs1 = [
-    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,d.pt,d.pt,d.pt,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_],
-    [_,d.sh,d.sh,d.sh,_,_,_,_,_,d.pt,d.pt,_,_,_,_,_],
-    [_,d.sh,d.sh,_,_,_,_,_,_,d.sh,d.sh,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  const legs2 = [
-    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,_,d.pt,d.pt,d.pt,_,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,_,d.sh,d.sh,d.sh,_,_,_,_,_,_],
-    [_,_,_,d.sh,d.sh,_,_,d.sh,d.sh,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  return [...top, ...(frame === 0 ? legs1 : legs2)];
-}
-
-function kikiGrid(frame) {
-  const k = KK, _ = null;
-  const f1 = [
-    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.ol,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [k.ol,k.bd,k.bd,k.ey,k.bd,k.bd,k.bd,k.ey,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [k.ol,k.bd,k.pt,k.bd,k.ns,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.st,k.ch,k.ch,k.ch,k.ch,k.st,k.bd,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.pt,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.st,k.st,k.bd,k.bd,k.ol,_,_,_,_,_,_,_],
-    [k.ol,k.bd,_,k.bd,_,_,k.bd,_,k.ol,_,_,_,_,_,_,_],
-    [k.ol,k.ol,_,k.ol,_,_,k.ol,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  const f2 = [
-    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.ol,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [k.ol,k.bd,k.bd,k.ey,k.bd,k.bd,k.bd,k.ey,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [k.ol,k.bd,k.pt,k.bd,k.ns,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.st,k.ch,k.ch,k.ch,k.ch,k.st,k.bd,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.pt,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.st,k.st,k.bd,k.bd,k.ol,_,_,_,_,_,_,_],
-    [_,_,k.ol,k.bd,_,_,_,k.bd,k.ol,_,_,_,_,_,_,_],
-    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
-  ];
-  return frame === 0 ? f1 : f2;
-}
-
-function drawGrid(ctx, grid, ps) {
-  for (let r = 0; r < grid.length; r++)
-    for (let c = 0; c < grid[r].length; c++)
-      if (grid[r][c]) { ctx.fillStyle = grid[r][c]; ctx.fillRect(c * ps, r * ps, ps, ps); }
-}
-
-function attachSprite(canvasEl, gridFn, cols, rows, walk) {
-  canvasEl.width  = cols * PS;
-  canvasEl.height = rows * PS;
-  canvasEl.style.width  = (cols * PS) + 'px';
-  canvasEl.style.height = (rows * PS) + 'px';
-  const ctx = canvasEl.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  let frame = 0;
-  function tick() {
-    ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-    drawGrid(ctx, gridFn(frame), PS);
-    if (walk) frame = (frame + 1) % 2;
-  }
-  tick();
-  if (walk) setInterval(tick, 300);
-}
 
 // ============================================================
 // GAME COVER ART
@@ -454,10 +281,6 @@ function colBlock(label, content) {
 document.getElementById('sai-col').appendChild(colBlock('Currently Playing', gameCards(SAI_PLAYING)));
 document.getElementById('dom-col').appendChild(colBlock('Currently Playing', gameCards(DOM_PLAYING)));
 
-// Now safe to attach sprites — canvases are stable in the DOM
-attachSprite(document.getElementById('sai-canvas'),  saiGrid,  16, 24, true);
-attachSprite(document.getElementById('dom-canvas'),  domGrid,  16, 24, true);
-attachSprite(document.getElementById('kiki-canvas'), kikiGrid, 16, 12, false);
 
 // ============================================================
 // STEAM PROFILE CARDS
