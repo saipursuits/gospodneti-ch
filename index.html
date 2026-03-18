@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Gospodnetich Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #100e0b;
+    --bg2:     #17140f;
+    --bg3:     #1f1b14;
+    --bg4:     #27221a;
+    --border:  rgba(210,185,145,0.1);
+    --border2: rgba(210,185,145,0.18);
+    --text:    #e6dfd3;
+    --muted:   #8a8070;
+    --faint:   #4a4438;
+    --ink:     #c8b48a;
+    --ink2:    #7a9e8a;
+    --serif:   'Playfair Display', Georgia, serif;
+    --body:    'Crimson Pro', Georgia, serif;
+    --mono:    'DM Mono', monospace;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 17px;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(16,14,11,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 2.5rem; height: 58px; gap: 0;
+  }
+  .nav-logo { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); letter-spacing: 0.02em; text-decoration: none; }
+  .nav-logo .tld { color: var(--ink); font-style: italic; }
+  .nav-rule { width: 1px; height: 16px; background: var(--border2); margin: 0 1.4rem; flex-shrink: 0; }
+  .nav-tagline { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.15em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; margin-left: auto; }
+  .nav-links a { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--muted); text-decoration: none; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--ink); }
+
+  .hero { padding: 6rem 2.5rem 4.5rem; max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 5rem; align-items: end; }
+  .hero-stamp { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink2); border: 1px solid rgba(122,158,138,0.35); border-radius: 2px; padding: 4px 10px; margin-bottom: 1.5rem; }
+  .hero-title { font-family: var(--serif); font-size: clamp(3.2rem, 5.5vw, 5.2rem); font-weight: 400; line-height: 1.0; color: var(--text); letter-spacing: -0.01em; }
+  .hero-title em { color: var(--ink); font-style: italic; }
+  .hero-rule { width: 48px; height: 1px; background: var(--border2); margin: 1.8rem 0; }
+  .hero-sub { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 400px; font-style: italic; }
+
+  .hero-right { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .hero-stat { padding: 1.1rem 1.4rem; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+  .hero-stat:last-child { border-bottom: none; }
+  .hero-stat:hover { background: var(--bg3); }
+  .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); }
+  .stat-value { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--ink); font-style: italic; }
+
+  .ruled-divider { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; display: flex; align-items: center; gap: 1rem; }
+  .ruled-divider::before, .ruled-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .ruled-divider span { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+
+  .map-section { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; }
+  .map-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .map-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .map-status { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--ink2); }
+  .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink2); position: relative; display: inline-block; }
+  .pulse-dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--ink2); opacity: 0.5; animation: pulse 2s ease-out infinite; }
+  @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.4); opacity: 0; } }
+  .map-container { width: 100%; height: 340px; border-radius: 4px; border: 1px solid var(--border); overflow: hidden; }
+  #map { width: 100%; height: 100%; }
+  .leaflet-tile { filter: brightness(0.38) saturate(0.2) sepia(0.3); }
+  .leaflet-container { background: #100e0b; }
+  .leaflet-control-zoom a { background: #1f1b14 !important; color: #e6dfd3 !important; border-color: rgba(210,185,145,0.1) !important; border-radius: 2px !important; }
+  .leaflet-control-attribution { background: rgba(16,14,11,0.8) !important; color: #4a4438 !important; font-size: 10px !important; }
+  .leaflet-control-attribution a { color: #4a4438 !important; }
+  .custom-pin { width: 12px; height: 12px; border-radius: 50%; background: #7a9e8a; border: 2px solid #e6dfd3; box-shadow: 0 0 0 4px rgba(122,158,138,0.2); }
+
+  .sections-wrap { max-width: 1100px; margin: 3.5rem auto 0; padding: 0 2.5rem; }
+  .sections { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .section-card { background: var(--bg2); padding: 2.2rem 2rem; cursor: pointer; transition: background 0.2s; text-decoration: none; display: block; color: inherit; border-right: 1px solid var(--border); }
+  .section-card:last-child { border-right: none; }
+  .section-card:hover { background: var(--bg3); }
+  .section-number { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.15em; margin-bottom: 1.8rem; display: block; }
+  .section-icon { font-size: 22px; margin-bottom: 0.9rem; display: block; }
+  .section-title { font-family: var(--serif); font-size: 1.7rem; font-weight: 400; line-height: 1.1; margin-bottom: 0.6rem; }
+  .section-desc { font-size: 15px; color: var(--muted); line-height: 1.6; font-style: italic; }
+  .section-arrow { display: inline-block; margin-top: 1.5rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink); }
+  .card-1 .section-title { color: #c8b48a; }
+  .card-2 .section-title { color: #9aabb8; }
+  .card-3 .section-title { color: #a07878; }
+
+  footer { max-width: 1100px; margin: 4rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
+  .footer-mark { color: var(--ink2); margin: 0 6px; }
+
+  /* LOCKSCREEN */
+  #lockscreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  #lockscreen.hidden { display: none; }
+  #site-content { display: none; }
+  #site-content.visible { display: block; }
+
+  .lock-wrap { text-align: center; max-width: 360px; padding: 2rem; }
+  .lock-sigil {
+    font-family: var(--serif); font-size: 13px; font-style: italic;
+    color: var(--ink); letter-spacing: 0.04em; margin-bottom: 2.5rem;
+    display: block;
+  }
+  .lock-title {
+    font-family: var(--serif); font-size: 2.4rem; font-weight: 400;
+    line-height: 1.05; color: var(--text); margin-bottom: 0.5rem;
+  }
+  .lock-title em { color: var(--ink); font-style: italic; }
+  .lock-sub {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--faint); margin-bottom: 2.5rem;
+  }
+  .lock-rule { width: 32px; height: 1px; background: var(--border2); margin: 0 auto 2.5rem; }
+  .lock-input-wrap { position: relative; margin-bottom: 1rem; }
+  .lock-input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 2px; padding: 0.85rem 1.1rem;
+    font-family: var(--mono); font-size: 14px; letter-spacing: 0.15em;
+    color: var(--text); outline: none; text-align: center;
+    transition: border-color 0.2s;
+  }
+  .lock-input::placeholder { color: var(--faint); letter-spacing: 0.1em; }
+  .lock-input:focus { border-color: var(--ink); }
+  .lock-input.error { border-color: #a05540; animation: shake 0.35s ease; }
+  .lock-btn {
+    width: 100%; padding: 0.85rem; background: transparent;
+    border: 1px solid var(--border2); border-radius: 2px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ink); cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .lock-btn:hover { background: var(--bg3); border-color: var(--ink); }
+  .lock-error {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    color: #a05540; margin-top: 0.75rem; opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .lock-error.visible { opacity: 1; }
+  .lock-footer {
+    margin-top: 3rem; font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.15em; color: var(--faint); text-transform: uppercase;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOCKSCREEN -->
+<div id="lockscreen">
+  <div class="lock-wrap">
+    <span class="lock-sigil">gospodneti.ch</span>
+    <h1 class="lock-title">The Gospodnetich <em>Log</em></h1>
+    <p class="lock-sub">Private · Family Only</p>
+    <div class="lock-rule"></div>
+    <div class="lock-input-wrap">
+      <input class="lock-input" id="lock-input" type="password" placeholder="enter passphrase" autocomplete="off" />
+    </div>
+    <button class="lock-btn" id="lock-btn">Enter →</button>
+    <p class="lock-error" id="lock-error">Incorrect passphrase. Try again.</p>
+    <p class="lock-footer">Est. 2026 · Fullerton, CA</p>
+  </div>
+</div>
+
+<!-- SITE CONTENT -->
+<div id="site-content">
+
+<nav>
+  <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
+  <div class="nav-rule"></div>
+  <span class="nav-tagline">Family Log</span>
+  <ul class="nav-links">
+    <li><a href="schedule.html">Schedule</a></li>
+    <li><a href="chronicle.html">Chronicle</a></li>
+    <li><a href="sidequests.html">Side Quests</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <span class="hero-stamp">Est. 2026 · Fullerton, CA</span>
+    <h1 class="hero-title">The Gospodnetich <em>Log</em></h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">Our corner of the internet. Trips taken, places visited, life tracked — and whatever side quests we're currently obsessing over.</p>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stat">
+      <span class="stat-label">Currently in</span>
+      <span class="stat-value">Fullerton, CA</span>
+    </div>
+    <div class="hero-stat">
+      <span class="stat-label">Next up</span>
+      <span class="stat-value">TBD</span>
+    </div>
+    <div class="hero-stat">
+      <span class="stat-label">Trips logged</span>
+      <span class="stat-value">0</span>
+    </div>
+    <div class="hero-stat">
+      <span class="stat-label">Est.</span>
+      <span class="stat-value">2026</span>
+    </div>
+  </div>
+</section>
+
+<div class="ruled-divider"><span>Whereabouts</span></div>
+
+<div class="map-section">
+  <div class="map-header">
+    <span class="map-label">Current Location</span>
+    <span class="map-status"><span class="pulse-dot"></span> Fullerton, California</span>
+  </div>
+  <div class="map-container">
+    <div id="map"></div>
+  </div>
+</div>
+
+<div class="sections-wrap">
+  <div class="sections">
+    <a href="schedule.html" class="section-card card-1">
+      <span class="section-number">No. 01</span>
+      <span class="section-icon">📅</span>
+      <h2 class="section-title">Schedule</h2>
+      <p class="section-desc">What we're up to day to day. Events, reminders, and the rhythm of our week.</p>
+      <span class="section-arrow">Open →</span>
+    </a>
+    <a href="chronicle.html" class="section-card card-2">
+      <span class="section-number">No. 02</span>
+      <span class="section-icon">✈️</span>
+      <h2 class="section-title">Chronicle</h2>
+      <p class="section-desc">Every place we've been, mapped and logged. The long record of our travels.</p>
+      <span class="section-arrow">Browse →</span>
+    </a>
+    <a href="sidequests.html" class="section-card card-3">
+      <span class="section-number">No. 03</span>
+      <span class="section-icon">🎯</span>
+      <h2 class="section-title">Side Quests</h2>
+      <p class="section-desc">Current obsessions, ongoing projects, and things we're hunting down.</p>
+      <span class="section-arrow">Discover →</span>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <span>gospodneti.ch</span>
+  <span>Private<span class="footer-mark">·</span>2026</span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map', {
+    center: [33.8703, -117.9253],
+    zoom: 10, zoomControl: true, scrollWheelZoom: false,
+  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  const pinIcon = L.divIcon({
+    className: '',
+    html: '<div class="custom-pin"></div>',
+    iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -10]
+  });
+  // TO UPDATE: change coordinates + popup text for current location
+  L.marker([33.8703, -117.9253], { icon: pinIcon })
+    .addTo(map)
+    .bindPopup('<strong style="font-family:sans-serif;font-size:13px">Fullerton, CA</strong><br><span style="font-size:12px;color:#888">Home base</span>')
+    .openPopup();
+</script>
+
+</div><!-- end #site-content -->
+
+<script>
+  const PASS = 'ljetopis';
+  const SESSION_KEY = 'gospodneti_auth';
+
+  const lockscreen = document.getElementById('lockscreen');
+  const siteContent = document.getElementById('site-content');
+  const input = document.getElementById('lock-input');
+  const btn = document.getElementById('lock-btn');
+  const errMsg = document.getElementById('lock-error');
+
+  function unlock() {
+    lockscreen.classList.add('hidden');
+    siteContent.classList.add('visible');
+    sessionStorage.setItem(SESSION_KEY, '1');
+  }
+
+  function tryPassword() {
+    if (input.value.trim().toLowerCase() === PASS) {
+      unlock();
+    } else {
+      input.classList.add('error');
+      errMsg.classList.add('visible');
+      input.value = '';
+      setTimeout(() => input.classList.remove('error'), 400);
+    }
+  }
+
+  // Already authenticated this session?
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    unlock();
+  }
+
+  btn.addEventListener('click', tryPassword);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryPassword(); });
+  input.addEventListener('input', () => errMsg.classList.remove('visible'));
+</script>
+</body>
+</html>
