@@ -45,6 +45,7 @@
 
   /* PERSON COLUMN HEADERS — name on left, sprite on right */
   canvas { image-rendering: pixelated; display: block; }
+  .person-col-header canvas { max-height: 48px; width: auto; }
 
   /* PAGE */
   .page-header { max-width: 1100px; margin: 0 auto; padding: 4rem 2.5rem 3rem; }
@@ -89,6 +90,40 @@
   .profiles-wrap { max-width: 1100px; margin: 3rem auto 0; padding: 0 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
   .profile-col { display: flex; flex-direction: column; gap: 1rem; }
   .profile-col-header { font-family: var(--serif); font-size: 1.4rem; font-weight: 400; font-style: italic; color: var(--ink); padding-bottom: 0.75rem; border-bottom: 1px solid var(--border2); margin-bottom: 0.25rem; }
+  /* STEAM PROFILE CARD */
+  .steam-card { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
+  .steam-card:hover { border-color: var(--border2); }
+  .steam-card-inner { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--bg2); }
+  .steam-avatar { width: 56px; height: 56px; border-radius: 4px; flex-shrink: 0; background: var(--bg3); border: 2px solid #4a90d9; }
+  .steam-avatar img { width: 100%; height: 100%; border-radius: 3px; display: block; }
+  .steam-info { flex: 1; min-width: 0; }
+  .steam-name { font-family: var(--serif); font-size: 1.1rem; font-weight: 400; color: var(--text); }
+  .steam-status { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; margin-top: 3px; }
+  .steam-status.online  { color: #7a9e8a; }
+  .steam-status.offline { color: var(--faint); }
+  .steam-status.ingame  { color: #90c8a0; }
+  .steam-meta { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 5px; letter-spacing: 0.05em; }
+  .steam-link { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #4a90d9; text-decoration: none; }
+  .steam-link:hover { color: var(--text); }
+  .steam-loading { font-family: var(--mono); font-size: 10px; color: var(--faint); padding: 1rem 1.25rem; background: var(--bg2); }
+
+  /* STATIC PROFILE CARD — matches Steam card layout */
+  .static-card-inner { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--bg2); }
+  .static-service-icon { width: 40px; height: 40px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .static-service-icon svg { width: 24px; height: 24px; display: block; }
+  .static-info { flex: 1; min-width: 0; }
+  .static-name { font-family: var(--serif); font-size: 1.1rem; font-weight: 400; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .clan-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; padding: 2px 7px; border-radius: 2px; background: rgba(114,137,218,0.15); color: #7289da; border: 1px solid rgba(114,137,218,0.3); flex-shrink: 0; }
+  .static-label { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.08em; margin-top: 3px; }
+  .copy-btn {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    background: none; border: 1px solid var(--border); border-radius: 2px;
+    color: var(--muted); cursor: pointer; padding: 4px 10px; flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--border2); color: var(--text); }
+  .copy-btn.copied { color: var(--ink2); border-color: var(--ink2); }
+
   .profile-card { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
   .profile-card:hover { border-color: var(--border2); }
   .profile-card-header { display: flex; align-items: center; gap: 8px; padding: 0.75rem 1.25rem; background: var(--bg3); border-bottom: 1px solid var(--border); }
@@ -127,7 +162,7 @@
     <canvas id="kiki-canvas" class="kiki-idle"></canvas>
   </div>
   <div class="page-rule"></div>
-  <p class="page-sub">What we're playing, what we're waiting for, and whatever else we're chasing down.</p>
+  <p class="page-sub">What we're playing and whatever else we're chasing down.</p>
 </div>
 
 <div class="ruled-divider"><span>Games</span></div>
@@ -186,253 +221,166 @@ const DOM_WISHLIST = [
 // ============================================================
 const PROFILES = [
   { service: 'Steam',      dotClass: 'dot-steam',
-    sai: { handle: '사이', url: 'https://steamcommunity.com/id/saithepyro' }, dom: { handle: '', url: '' } },
+    sai: { handle: '사이', url: 'https://steamcommunity.com/id/itssai/' }, dom: { handle: 'HUMUNGA DUNGA', url: 'https://steamcommunity.com/profiles/76561197982608920' } },
   { service: 'Battle.net', dotClass: 'dot-battle',
-    sai: { handle: 'Sai#1429', url: '' }, dom: { handle: '', url: '' } },
+    sai: { handle: 'Sai#1429', tag: null }, dom: { handle: 'Platinum#1593', tag: null } },
   { service: 'Discord',    dotClass: 'dot-discord',
-    sai: { handle: 'sai.ri', url: '' }, dom: { handle: '', url: '' } },
+    sai: { handle: 'sai.ri', tag: 'CULT' }, dom: { handle: 'platinumpancakes', tag: 'BAZZ' } },
 ];
 
 // ============================================================
-// 32-BIT SPRITES
-// Each "pixel" = 2px. Grids are 20 cols × 32 rows (people)
-// and 18 cols × 14 rows (Kiki).
-// We build two walk frames per character.
+// SPRITES — Top-down RPG style (Stardew-inspired)
+// PS = 3px per pixel, 16 cols x 24 rows (people), 16 cols x 12 rows (Kiki)
 // ============================================================
-const PS = 2; // pixel size
+const PS = 3;
 
-// ---- SAI palette ----
-// Black hair with copper/brown balayage highlights
 const SAI = {
-  _:    null,
-  sk:   '#dba882', // skin
-  sk2:  '#c8906a', // shadow skin
-  hb:   '#0e0a10', // base hair (near-black)
-  hc:   '#7a4020', // copper balayage
-  hm:   '#3a1a08', // mid hair
-  eye:  '#3a2860', // dark violet-brown eye
-  brow: '#2a1808',
-  lip:  '#c07060',
-  hd:   '#c8b8e0', // hoodie light lavender
-  hd2:  '#a090c0', // hoodie mid
-  hd3:  '#806898', // hoodie shadow
-  pt:   '#2e2a42', // pants
-  pt2:  '#1e1a2e',
-  sh:   '#18140e', // shoe
-  sh2:  '#28201a',
-  wh:   '#e8e0f0', // white (eyes)
+  _:null, sk:'#dba882', sk2:'#c8906a',
+  hb:'#0e0a10', hc:'#7a4020',
+  eye:'#7050c8', wh:'#f0eeff',
+  hd:'#c0aedd', hd2:'#9878bb', hd3:'#7058a0',
+  pt:'#3a3060', sh:'#18140e',
 };
 
-// ---- DOMINIC palette ----
 const DOM = {
-  _:    null,
-  sk:   '#cc8858', // skin
-  sk2:  '#b07040',
-  hr:   '#4a2810', // brown hair
-  hr2:  '#6a3c18', // highlight
-  hr3:  '#2e1808', // shadow
-  brd:  '#3a2010', // beard
-  brd2: '#281808',
-  eye:  '#3a6020', // green eye
-  brow: '#3a2010',
-  wh:   '#e8e8e0',
-  ts:   '#2e4030', // dark green shirt
-  ts2:  '#1e2e22',
-  ts3:  '#3e5040',
-  pt:   '#1e2030',
-  pt2:  '#141420',
-  sh:   '#100e08',
-  sh2:  '#1e1c14',
+  _:null, sk:'#cc8858', sk2:'#b07040',
+  hr:'#4a2810', hr2:'#6a3c18', hr3:'#2e1808',
+  brd:'#3a2010',
+  eye:'#3a6020', wh:'#e8ffe8',
+  ts:'#2e4030', ts2:'#1e2e22', ts3:'#4a6050',
+  pt:'#1e2030', sh:'#100e08',
 };
 
-// ---- KIKI palette ---- dilute tortie: grey-brown, cream, patches
 const KK = {
-  _:    null,
-  bd:   '#8a7a68', // main body grey-brown
-  bd2:  '#6a5a4a', // shadow
-  pt:   '#7a5a3a', // warm brown patch
-  pt2:  '#9a7050',
-  ch:   '#d8cdb8', // cream chest
-  ch2:  '#c0b49e',
-  st:   '#504030', // dark stripes
-  ey:   '#8aaa30', // yellow-green eye
-  ey2:  '#6a8a18',
-  ns:   '#d07878', // pink nose
-  wh:   '#e8e4d8', // white muzzle
-  ol:   '#201808', // outline
-  er:   '#c89080', // inner ear
+  _:null, bd:'#8a7a68', bd2:'#6a5a4a',
+  pt:'#7a5a3a', ch:'#d8cdb8',
+  st:'#504030', ey:'#8aaa30', ns:'#d07878',
+  ol:'#201808',
 };
 
-// Helper: draw a 2D pixel grid onto a canvas context
-function drawGrid(ctx, grid, ps) {
-  for (let r = 0; r < grid.length; r++)
-    for (let c = 0; c < grid[r].length; c++)
-      if (grid[r][c]) {
-        ctx.fillStyle = grid[r][c];
-        ctx.fillRect(c * ps, r * ps, ps, ps);
-      }
-}
-
-// ---- SAI frames (20 × 32) ----
 function saiGrid(frame) {
   const s = SAI, _ = null;
-  // shared body (rows 0–19), legs differ per frame
   const top = [
-    // row 0–1: hair top
-    [_,_,_,_,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,_,_,_,_,_,_,_],
-    [_,_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,_,_,_,_,_,_],
-    // row 2–3: hair sides + forehead
-    [_,_,s.hb,s.hb,s.hm,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hm,s.hb,s.hb,_,_,_,_,_],
-    [_,_,s.hb,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hb,_,_,_,_,_],
-    // row 4–5: eyes
-    [_,_,s.hb,s.brow,s.brow,s.sk,s.wh,s.eye,s.sk,s.sk,s.wh,s.eye,s.sk,s.brow,s.hb,_,_,_,_,_],
-    [_,_,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
-    // row 6: nose/mouth
-    [_,_,s.hb,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
-    [_,_,s.hb,s.sk,s.sk,s.sk,s.sk,s.lip,s.lip,s.lip,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_,_],
-    // row 8: long hair falls down sides
-    [_,s.hb,s.hb,s.hc,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hc,s.hb,s.hb,_,_,_,_],
-    [_,s.hb,s.hc,s.hm,s.hb,_,_,_,_,_,_,_,_,s.hb,s.hm,s.hc,s.hb,_,_,_],
-    // row 10–14: hoodie body
-    [_,s.hb,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hb,_,_,_,_],
-    [s.hb,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hb,_,_,_],
-    [s.hb,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hb,_,_,_],
-    [s.hb,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd3,s.hd,s.hd,s.hd,s.hd,s.hd,s.hb,_,_,_],
-    [s.hb,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hb,_,_,_],
-    // row 15: hoodie pocket
-    [_,s.hb,s.hd,s.hd,s.hd,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd3,s.hd,s.hd,s.hb,_,_,_,_],
-    [_,s.hb,s.hc,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hc,s.hb,_,_,_,_],
-    [_,_,s.hb,s.hc,s.hm,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hm,s.hc,s.hb,_,_,_,_,_],
-    // row 18–19: waist
-    [_,_,_,s.hb,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.hb,_,_,_,_,_,_],
-    [_,_,_,_,s.pt,s.pt2,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
+    [_,_,_,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,s.hb,_,_,_,_,_],
+    [_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hc,s.hb,s.hb,s.hb,s.hb,_,_,_,_],
+    [_,s.hb,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hb,s.hb,_,_,_,_],
+    [_,s.hb,s.sk,s.sk,s.wh,s.eye,s.sk,s.wh,s.eye,s.sk,s.sk,s.hb,_,_,_,_],
+    [_,s.hb,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk2,s.sk,s.sk,s.sk,s.hb,_,_,_,_],
+    [_,s.hb,s.sk,s.sk,s.sk,s.sk,s.sk2,s.sk,s.sk,s.sk,s.sk,s.hb,_,_,_,_],
+    [_,s.hb,s.hc,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.sk,s.hc,s.hb,_,_,_,_],
+    [_,_,s.hb,s.hb,s.hc,s.hb,s.hb,s.hb,s.hc,s.hb,s.hb,_,_,_,_,_],
+    [_,_,_,_,s.sk,s.sk,s.sk,s.sk,s.sk,_,_,_,_,_,_,_],
+    [_,_,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,_,_,_,_,_],
+    [_,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,s.hd,_,_,_,_],
+    [_,s.hd,s.hd2,s.hd,s.hd,s.hd3,s.hd3,s.hd,s.hd,s.hd2,s.hd,s.hd,_,_,_,_],
+    [_,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,s.hd,_,_,_,_],
+    [_,_,s.hd,s.hd2,s.hd,s.hd,s.hd,s.hd,s.hd2,s.hd,s.hd,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,_,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,s.pt,_,_,_,_,_,_],
   ];
-
-  const legs_f1 = [
-    // rows 20–27: legs frame 1 (right fwd, left back)
-    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
-    [_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
-    [_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_],
-    [_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_],
-    [_,s.sh,s.sh,s.sh2,_,_,_,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
-    [_,s.sh,s.sh,s.sh,_,_,_,_,_,_,_,s.sh,s.sh2,s.sh,_,_,_,_,_,_],
+  const legs1 = [
+    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,s.pt,s.pt,s.pt,_,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_],
+    [_,s.sh,s.sh,s.sh,_,_,_,_,_,s.pt,s.pt,_,_,_,_,_],
+    [_,s.sh,s.sh,_,_,_,_,_,_,s.sh,s.sh,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
-  const legs_f2 = [
-    // frame 2 (left fwd, right back)
-    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
-    [_,_,s.pt,s.pt,s.pt2,_,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,s.pt,s.pt,s.pt,_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,s.pt,s.pt2,s.pt,_,_,_,s.pt,s.pt2,s.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,s.pt,s.pt,s.pt,_,_,_,s.sh,s.sh,s.sh2,_,_,_,_,_,_,_],
-    [_,_,_,s.sh,s.sh2,s.sh,_,_,_,_,s.sh,s.sh,s.sh,_,_,_,_,_,_,_],
+  const legs2 = [
+    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,_,s.pt,s.pt,s.pt,_,_,_,s.pt,s.pt,s.pt,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,_,s.pt,s.pt,s.pt,_,_,_,_,_,_],
+    [_,_,_,s.pt,s.pt,s.pt,_,s.sh,s.sh,s.sh,_,_,_,_,_,_],
+    [_,_,_,s.sh,s.sh,_,_,s.sh,s.sh,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
-
-  const pad = Array(4).fill(null).map(() => Array(20).fill(null));
-  return [...top, ...(frame === 0 ? legs_f1 : legs_f2), ...pad];
+  return [...top, ...(frame === 0 ? legs1 : legs2)];
 }
 
-// ---- DOMINIC frames (20 × 32) ----
 function domGrid(frame) {
   const d = DOM, _ = null;
   const top = [
-    [_,_,_,_,d.hr3,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr3,_,_,_,_,_,_,_],
-    [_,_,_,d.hr3,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr3,_,_,_,_,_,_],
-    [_,_,d.hr3,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,d.hr3,_,_,_,_,_],
-    [_,_,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,_,_,_,_,_],
-    [_,_,d.hr,d.brow,d.brow,d.sk,d.wh,d.eye,d.sk,d.sk,d.wh,d.eye,d.sk,d.brow,d.hr,_,_,_,_,_],
-    [_,_,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,_,_,_,_,_],
-    [_,_,d.hr,d.sk,d.sk2,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,_,_,_,_,_],
-    // beard rows
-    [_,_,d.hr,d.brd,d.brd,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.brd,d.brd,d.hr,_,_,_,_,_],
-    [_,_,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,_,_,_,_,_],
-    [_,_,d.brd2,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd2,_,_,_,_,_],
-    // shirt
-    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
-    [d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_],
-    [d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_],
-    [d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts3,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts3,d.ts,d.ts2,d.ts,d.ts,_,_,_],
-    [d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_],
-    [_,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,_,_,_,_],
-    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
-    [_,_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
-    [_,_,_,_,d.pt,d.pt2,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
+    [_,_,_,d.hr3,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr,d.hr3,_,_,_,_,_],
+    [_,_,d.hr3,d.hr,d.hr2,d.hr,d.hr,d.hr2,d.hr,d.hr,d.hr,d.hr3,_,_,_,_],
+    [_,d.hr,d.hr,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.sk,d.hr,d.hr,_,_,_,_],
+    [_,d.hr,d.sk,d.sk,d.wh,d.eye,d.sk,d.wh,d.eye,d.sk,d.sk,d.hr,_,_,_,_],
+    [_,d.hr,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk2,d.sk,d.sk,d.sk,d.hr,_,_,_,_],
+    [_,d.hr,d.brd,d.sk,d.sk,d.sk,d.sk2,d.sk,d.sk,d.sk,d.brd,d.hr,_,_,_,_],
+    [_,d.hr,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.brd,d.hr,_,_,_,_],
+    [_,_,d.hr,d.hr,d.brd,d.hr,d.hr,d.brd,d.hr,d.hr,d.hr,_,_,_,_,_],
+    [_,_,_,_,d.sk,d.sk,d.sk,d.sk,d.sk,_,_,_,_,_,_,_],
+    [_,_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_,_],
+    [_,d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,d.ts,d.ts,_,_,_,_],
+    [_,d.ts,d.ts2,d.ts,d.ts,d.ts3,d.ts3,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_,_],
+    [_,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,d.ts,_,_,_,_],
+    [_,_,d.ts,d.ts2,d.ts,d.ts,d.ts,d.ts,d.ts2,d.ts,d.ts,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,d.pt,_,_,_,_,_,_],
   ];
-
-  const legs_f1 = [
-    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
-    [_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
-    [_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_],
-    [_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_],
-    [_,d.sh,d.sh,d.sh2,_,_,_,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
-    [_,d.sh,d.sh,d.sh,_,_,_,_,_,_,_,d.sh,d.sh2,d.sh,_,_,_,_,_,_],
+  const legs1 = [
+    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,d.pt,d.pt,d.pt,_,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_],
+    [_,d.sh,d.sh,d.sh,_,_,_,_,_,d.pt,d.pt,_,_,_,_,_],
+    [_,d.sh,d.sh,_,_,_,_,_,_,d.sh,d.sh,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
-  const legs_f2 = [
-    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
-    [_,_,d.pt,d.pt,d.pt2,_,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,d.pt,d.pt,d.pt,_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,d.pt,d.pt2,d.pt,_,_,_,d.pt,d.pt2,d.pt,_,_,_,_,_,_,_],
-    [_,_,_,_,d.pt,d.pt,d.pt,_,_,_,d.sh,d.sh,d.sh2,_,_,_,_,_,_,_],
-    [_,_,_,d.sh,d.sh2,d.sh,_,_,_,_,d.sh,d.sh,d.sh,_,_,_,_,_,_,_],
+  const legs2 = [
+    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,_,d.pt,d.pt,d.pt,_,_,_,d.pt,d.pt,d.pt,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,_,d.pt,d.pt,d.pt,_,_,_,_,_,_],
+    [_,_,_,d.pt,d.pt,d.pt,_,d.sh,d.sh,d.sh,_,_,_,_,_,_],
+    [_,_,_,d.sh,d.sh,_,_,d.sh,d.sh,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
-
-  const pad = Array(4).fill(null).map(() => Array(20).fill(null));
-  return [...top, ...(frame === 0 ? legs_f1 : legs_f2), ...pad];
+  return [...top, ...(frame === 0 ? legs1 : legs2)];
 }
 
-// ---- KIKI frames (18 × 14) — proper cat silhouette ----
 function kikiGrid(frame) {
   const k = KK, _ = null;
-  // Frame 1: walking, one leg fwd
   const f1 = [
-    // ears (row 0–1)
-    [_,_,k.ol,k.ol,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_],
-    // head top (row 2)
-    [_,k.ol,k.bd2,k.bd,k.bd,k.ol,k.ol,k.ol,k.ol,k.bd,k.bd,k.bd2,k.ol,_,_,_,_,_],
-    // face (row 3–5)
-    [k.ol,k.bd,k.pt,k.bd,k.ey,k.wh,k.wh,k.wh,k.wh,k.ey,k.bd,k.pt,k.bd,k.ol,_,_,_,_],
-    [k.ol,k.bd,k.bd,k.bd2,k.bd,k.wh,k.ns,k.wh,k.bd,k.bd2,k.bd,k.bd,k.bd,k.ol,_,_,_,_],
-    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.ol,_,_,_,_],
-    // neck/chest (row 6–7)
-    [_,k.ol,k.bd,k.ch2,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch2,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.pt,k.bd,k.ch,k.ch2,k.ch,k.ch,k.ch2,k.ch,k.bd,k.pt,k.ol,_,_,_,_,_],
-    // body (row 8–9)
-    [_,k.ol,k.bd,k.st,k.bd,k.bd,k.bd2,k.bd2,k.bd,k.bd,k.st,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.bd2,k.bd,k.pt,k.bd,k.bd,k.bd,k.bd,k.pt,k.bd,k.bd2,k.ol,_,_,_,_,_],
-    // legs frame 1 — right fwd
-    [_,_,k.ol,k.bd,k.bd,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [_,_,k.ol,k.bd2,k.ol,_,_,_,_,k.ol,k.bd2,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.ol,k.ol,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.ol,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [k.ol,k.bd,k.bd,k.ey,k.bd,k.bd,k.bd,k.ey,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [k.ol,k.bd,k.pt,k.bd,k.ns,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.st,k.ch,k.ch,k.ch,k.ch,k.st,k.bd,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.pt,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.st,k.st,k.bd,k.bd,k.ol,_,_,_,_,_,_,_],
+    [k.ol,k.bd,_,k.bd,_,_,k.bd,_,k.ol,_,_,_,_,_,_,_],
+    [k.ol,k.ol,_,k.ol,_,_,k.ol,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
-  // Frame 2: opposite legs
   const f2 = [
-    [_,_,k.ol,k.ol,_,_,_,_,_,_,k.ol,k.ol,_,_,_,_,_,_],
-    [_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.bd2,k.bd,k.bd,k.ol,k.ol,k.ol,k.ol,k.bd,k.bd,k.bd2,k.ol,_,_,_,_,_],
-    [k.ol,k.bd,k.pt,k.bd,k.ey,k.wh,k.wh,k.wh,k.wh,k.ey,k.bd,k.pt,k.bd,k.ol,_,_,_,_],
-    [k.ol,k.bd,k.bd,k.bd2,k.bd,k.wh,k.ns,k.wh,k.bd,k.bd2,k.bd,k.bd,k.bd,k.ol,_,_,_,_],
-    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.ol,_,_,_,_],
-    [_,k.ol,k.bd,k.ch2,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch2,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.pt,k.bd,k.ch,k.ch2,k.ch,k.ch,k.ch2,k.ch,k.bd,k.pt,k.ol,_,_,_,_,_],
-    [_,k.ol,k.bd,k.st,k.bd,k.bd,k.bd2,k.bd2,k.bd,k.bd,k.st,k.bd,k.ol,_,_,_,_,_],
-    [_,k.ol,k.bd2,k.bd,k.pt,k.bd,k.bd,k.bd,k.bd,k.pt,k.bd,k.bd2,k.ol,_,_,_,_,_],
-    // legs frame 2 — left fwd
-    [_,_,k.ol,k.bd,k.bd,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [_,_,_,k.ol,k.bd2,k.ol,_,_,k.ol,k.bd2,k.ol,_,_,_,_,_,_,_],
-    [_,_,_,_,k.ol,k.ol,_,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
-    [_,_,_,_,_,_,_,_,k.ol,k.ol,k.ol,_,_,_,_,_,_,_],
+    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.ol,_,k.ol,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [k.ol,k.bd,k.bd,k.ey,k.bd,k.bd,k.bd,k.ey,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [k.ol,k.bd,k.pt,k.bd,k.ns,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [k.ol,k.bd,k.ch,k.ch,k.ch,k.ch,k.ch,k.ch,k.bd,k.bd,k.ol,_,_,_,_,_],
+    [_,k.ol,k.st,k.ch,k.ch,k.ch,k.ch,k.st,k.bd,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.pt,k.bd,k.bd,k.pt,k.bd,k.bd,k.ol,_,_,_,_,_,_],
+    [_,k.ol,k.bd,k.bd,k.st,k.st,k.bd,k.bd,k.ol,_,_,_,_,_,_,_],
+    [_,_,k.ol,k.bd,_,_,_,k.bd,k.ol,_,_,_,_,_,_,_],
+    [_,_,k.ol,k.ol,_,_,_,k.ol,k.ol,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
   ];
   return frame === 0 ? f1 : f2;
+}
+
+function drawGrid(ctx, grid, ps) {
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      if (grid[r][c]) { ctx.fillStyle = grid[r][c]; ctx.fillRect(c * ps, r * ps, ps, ps); }
 }
 
 function attachSprite(canvasEl, gridFn, cols, rows, walk) {
@@ -504,14 +452,80 @@ function colBlock(label, content) {
 }
 
 document.getElementById('sai-col').appendChild(colBlock('Currently Playing', gameCards(SAI_PLAYING)));
-document.getElementById('sai-col').appendChild(colBlock('Wishlist', gameCards(SAI_WISHLIST)));
 document.getElementById('dom-col').appendChild(colBlock('Currently Playing', gameCards(DOM_PLAYING)));
-document.getElementById('dom-col').appendChild(colBlock('Wishlist', gameCards(DOM_WISHLIST)));
 
 // Now safe to attach sprites — canvases are stable in the DOM
-attachSprite(document.getElementById('sai-canvas'),  saiGrid,  20, 32, true);
-attachSprite(document.getElementById('dom-canvas'),  domGrid,  20, 32, true);
-attachSprite(document.getElementById('kiki-canvas'), kikiGrid, 18, 14, false);
+attachSprite(document.getElementById('sai-canvas'),  saiGrid,  16, 24, true);
+attachSprite(document.getElementById('dom-canvas'),  domGrid,  16, 24, true);
+attachSprite(document.getElementById('kiki-canvas'), kikiGrid, 16, 12, false);
+
+// ============================================================
+// STEAM PROFILE CARDS
+// ============================================================
+async function loadSteamCard(containerId, steamId, profileUrl, fallbackName) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `<div class="steam-card"><div class="steam-loading">Loading Steam profile...</div></div>`;
+
+  try {
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://steamcommunity.com/profiles/${steamId}/?xml=1`)}`;
+    const res = await fetch(proxy);
+    const data = await res.json();
+    const xml = new DOMParser().parseFromString(data.contents, 'text/xml');
+
+    const name     = xml.querySelector('steamID')?.textContent || fallbackName;
+    const avatar   = xml.querySelector('avatarFull')?.textContent || '';
+    const stateNum = parseInt(xml.querySelector('onlineState')?.textContent || '0');
+    const inGame   = xml.querySelector('inGameInfo gameName')?.textContent || '';
+
+    const statusLabel = inGame ? `▶ ${inGame}` : stateNum === 1 ? '● Online' : '● Offline';
+    const statusClass = inGame ? 'ingame' : stateNum === 1 ? 'online' : 'offline';
+
+    el.innerHTML = `
+      <div class="steam-card">
+        <div class="steam-card-inner">
+          <div class="steam-avatar">
+            <img src="${avatar}" alt="${name}" onerror="this.style.display='none'"/>
+          </div>
+          <div class="steam-info">
+            <div class="steam-name">${name}</div>
+            <div class="steam-status ${statusClass}">${statusLabel}</div>
+          </div>
+          <a href="${profileUrl}" target="_blank" class="steam-link">View →</a>
+        </div>
+      </div>`;
+  } catch (e) {
+    el.innerHTML = `
+      <div class="steam-card">
+        <div class="steam-card-inner">
+          <div class="steam-info">
+            <div class="steam-name">${fallbackName}</div>
+            <div class="steam-meta">Steam profile</div>
+          </div>
+          <a href="${profileUrl}" target="_blank" class="steam-link">View →</a>
+        </div>
+      </div>`;
+  }
+}
+
+function serviceIcon(service) {
+  if (service === 'Battle.net') {
+    return '<img src="bnet-icon.png" style="width:24px;height:24px;display:block;border-radius:4px;" alt="Battle.net"/>';
+  }
+  // Discord
+  return '<svg viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:20px;display:block;"><path fill="#7289da" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/></svg>';
+}
+
+// ============================================================
+// COPY TO CLIPBOARD
+// ============================================================
+function copyHandle(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
 
 // ============================================================
 // RENDER PROFILES AS INDEPENDENT CARDS PER PERSON
@@ -525,32 +539,73 @@ PROFILES.forEach(p => {
 
   const saiCard = document.createElement('div');
   saiCard.className = 'profile-card';
-  saiCard.innerHTML = `
-    <div class="profile-card-header">
-      <span class="service-dot ${p.dotClass}"></span>
-      <span class="profile-service-name">${p.service}</span>
-    </div>
-    <div class="profile-card-body">
-      ${saiH
-        ? `<span class="handle">${p.sai.url ? `<a href="${p.sai.url}" target="_blank">${saiH}</a>` : saiH}</span>`
-        : `<span class="handle-empty">—</span>`}
-    </div>`;
+
+  // For Steam, replace body with live Steam card
+  if (p.service === 'Steam') {
+    saiCard.innerHTML = `
+      <div class="profile-card-header">
+        <span class="service-dot ${p.dotClass}"></span>
+        <span class="profile-service-name">${p.service}</span>
+      </div>
+      <div id="sai-steam-card"></div>`;
+  } else {
+    const handle = p.sai.handle;
+    const iconColor = p.service === 'Battle.net' ? '#00aeff' : '#7289da';
+    const tagBadge = p.sai.tag ? `<span class="clan-tag">${p.sai.tag}</span>` : '';
+    const header = `<div class="profile-card-header"><span class="service-dot ${p.dotClass}"></span><span class="profile-service-name">${p.service}</span></div>`;
+    const copyBtn = handle ? `<button class="copy-btn" onclick="copyHandle(this,'${handle}')">Copy</button>` : '';
+    saiCard.innerHTML = header;
+    const inner = document.createElement('div');
+    inner.className = 'static-card-inner';
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'static-service-icon';
+    iconDiv.style.background = iconColor + '22';
+    iconDiv.innerHTML = serviceIcon(p.service);
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'static-info';
+    infoDiv.innerHTML = `<div class="static-name">${handle || '—'}${tagBadge}</div><div class="static-label">${p.service} handle</div>`;
+    inner.appendChild(iconDiv);
+    inner.appendChild(infoDiv);
+    if (handle) { const btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = 'Copy'; btn.onclick = () => copyHandle(btn, handle); inner.appendChild(btn); }
+    saiCard.appendChild(inner);
+  }
   saiProfiles.appendChild(saiCard);
 
   const domCard = document.createElement('div');
   domCard.className = 'profile-card';
-  domCard.innerHTML = `
-    <div class="profile-card-header">
-      <span class="service-dot ${p.dotClass}"></span>
-      <span class="profile-service-name">${p.service}</span>
-    </div>
-    <div class="profile-card-body">
-      ${domH
-        ? `<span class="handle">${p.dom.url ? `<a href="${p.dom.url}" target="_blank">${domH}</a>` : domH}</span>`
-        : `<span class="handle-empty">—</span>`}
-    </div>`;
+  if (p.service === 'Steam') {
+    domCard.innerHTML = `
+      <div class="profile-card-header">
+        <span class="service-dot ${p.dotClass}"></span>
+        <span class="profile-service-name">${p.service}</span>
+      </div>
+      <div id="dom-steam-card"></div>`;
+  } else {
+    const handle = p.dom.handle;
+    const iconColor = p.service === 'Battle.net' ? '#00aeff' : '#7289da';
+    const tagBadge = p.dom.tag ? `<span class="clan-tag">${p.dom.tag}</span>` : '';
+    const header = `<div class="profile-card-header"><span class="service-dot ${p.dotClass}"></span><span class="profile-service-name">${p.service}</span></div>`;
+    domCard.innerHTML = header;
+    const inner = document.createElement('div');
+    inner.className = 'static-card-inner';
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'static-service-icon';
+    iconDiv.style.background = iconColor + '22';
+    iconDiv.innerHTML = serviceIcon(p.service);
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'static-info';
+    infoDiv.innerHTML = `<div class="static-name">${handle || '—'}${tagBadge}</div><div class="static-label">${p.service} handle</div>`;
+    inner.appendChild(iconDiv);
+    inner.appendChild(infoDiv);
+    if (handle) { const btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = 'Copy'; btn.onclick = () => copyHandle(btn, handle); inner.appendChild(btn); }
+    domCard.appendChild(inner);
+  }
   domProfiles.appendChild(domCard);
 });
+
+// Load Steam cards after profile cards are in the DOM
+loadSteamCard('sai-steam-card', '76561198010345514', 'https://steamcommunity.com/id/itssai/', '사이');
+loadSteamCard('dom-steam-card', '76561197982608920', 'https://steamcommunity.com/profiles/76561197982608920', 'HUMUNGA DUNGA');
 </script>
 </body>
 </html>
