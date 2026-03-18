@@ -200,7 +200,7 @@
 
 <section class="hero">
   <div class="hero-left">
-    <span class="hero-stamp">Est. 2026 · Fullerton, CA</span>
+    <span class="hero-stamp">Est. 2021 · Fullerton, CA</span>
     <h1 class="hero-title">The Gospodnetich <em>Log</em></h1>
     <div class="hero-rule"></div>
     <p class="hero-sub">Our corner of the internet. Trips taken, places visited, life tracked — and whatever side quests we're currently obsessing over.</p>
@@ -210,17 +210,17 @@
       <span class="stat-label">Currently in</span>
       <span class="stat-value">Fullerton, CA</span>
     </div>
-    <div class="hero-stat">
+    <a href="schedule.html" class="hero-stat" style="text-decoration:none;">
       <span class="stat-label">Next up</span>
-      <span class="stat-value">TBD</span>
-    </div>
-    <div class="hero-stat">
+      <span class="stat-value" id="next-up-val" style="font-size:15px;text-align:right;max-width:200px;">—</span>
+    </a>
+    <a href="chronicle.html" class="hero-stat" style="text-decoration:none;">
       <span class="stat-label">Trips logged</span>
-      <span class="stat-value">0</span>
-    </div>
+      <span class="stat-value" id="trips-logged-val">35</span>
+    </a>
     <div class="hero-stat">
       <span class="stat-label">Est.</span>
-      <span class="stat-value">2026</span>
+      <span class="stat-value">2021</span>
     </div>
   </div>
 </section>
@@ -305,6 +305,33 @@
     lockscreen.classList.add('hidden');
     siteContent.classList.add('visible');
     sessionStorage.setItem(SESSION_KEY, '1');
+    // Fix Leaflet map rendering inside hidden container
+    setTimeout(() => { if (typeof map !== 'undefined') map.invalidateSize(); }, 100);
+  }
+
+  // ── NEXT UP: pull upcoming event from schedule data ──────
+  const EVENTS = [
+    { date: '2026-03-03', title: "Lunch w/ Mom @ Wood Ranch" },
+    { date: '2026-03-08', title: "Day with Kyle in Pasadena" },
+    { date: '2026-03-10', title: "Lunch w/ Mom @ Rock & Brews" },
+    { date: '2026-03-14', title: "Sister arrives ✈ SNA → Fullerton" },
+    { date: '2026-03-14', title: "Dinner @ Wadaya" },
+    { date: '2026-03-15', title: "Coffee @ Tous Les Jours" },
+    { date: '2026-03-17', title: "Lunch w/ Mom @ Tang" },
+    { date: '2026-03-25', title: "Lunch w/ Mom @ Myungin Dumplings" },
+    { date: '2026-03-27', title: "WonderCon · Whisker Dreams Pop-up" },
+    { date: '2026-03-28', title: "WonderCon · Whisker Dreams Pop-up" },
+    { date: '2026-03-29', title: "WonderCon · Whisker Dreams Pop-up" },
+  ];
+  const today = new Date().toISOString().split('T')[0];
+  const next = EVENTS.filter(e => e.date >= today).sort((a,b) => a.date.localeCompare(b.date))[0];
+  const nextEl = document.getElementById('next-up-val');
+  if (next && nextEl) {
+    const d = new Date(next.date + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    nextEl.textContent = `${label} — ${next.title}`;
+  } else if (nextEl) {
+    nextEl.textContent = 'Nothing scheduled';
   }
 
   function tryPassword() {
