@@ -101,6 +101,38 @@
   footer { max-width: 1100px; margin: 4rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
   .footer-mark { color: var(--ink2); margin: 0 6px; }
 
+  /* ── MOBILE NAV ── */
+  .nav-hamburger { display: none; background: none; border: 1px solid var(--border); border-radius: 2px; padding: 5px 9px; cursor: pointer; margin-left: auto; }
+  .nav-hamburger span { display: block; width: 16px; height: 1px; background: var(--muted); margin: 3px 0; transition: background 0.2s; }
+  .nav-hamburger:hover span { background: var(--ink); }
+
+  @media (max-width: 700px) {
+    nav { padding: 0 1.25rem; flex-wrap: wrap; height: auto; min-height: 52px; }
+    .nav-rule, .nav-tagline { display: none; }
+    .nav-hamburger { display: block; }
+    .nav-links {
+      display: none; width: 100%; flex-direction: column; gap: 0;
+      border-top: 1px solid var(--border); margin-left: 0; padding: 0.5rem 0;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links li { width: 100%; }
+    .nav-links a { display: block; padding: 0.6rem 0; }
+
+    .hero { padding: 3rem 1.25rem 2.5rem; grid-template-columns: 1fr; gap: 2rem; }
+    .hero-right { margin-top: 0; }
+
+    .ruled-divider { padding: 0 1.25rem; }
+    .map-section { padding: 0 1.25rem; }
+    .map-container { height: 240px; }
+
+    .sections-wrap { padding: 0 1.25rem; }
+    .sections { grid-template-columns: 1fr; }
+    .section-card { border-right: none !important; border-bottom: 1px solid var(--border); }
+    .section-card:last-child { border-bottom: none; }
+
+    footer { padding: 1.5rem 1.25rem 0; flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+
   /* LOCKSCREEN */
   #lockscreen {
     position: fixed; inset: 0; z-index: 9999;
@@ -191,7 +223,8 @@
   <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
   <div class="nav-rule"></div>
   <span class="nav-tagline">Family Log</span>
-  <ul class="nav-links">
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="nav-links">
     <li><a href="schedule.html">Schedule</a></li>
     <li><a href="chronicle.html">Chronicle</a></li>
     <li><a href="sidequests.html">Side Quests</a></li>
@@ -270,23 +303,27 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const map = L.map('map', {
-    center: [33.8703, -117.9253],
-    zoom: 10, zoomControl: true, scrollWheelZoom: false,
-  });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
-  const pinIcon = L.divIcon({
-    className: '',
-    html: '<div class="custom-pin"></div>',
-    iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -10]
-  });
-  // TO UPDATE: change coordinates + popup text for current location
-  L.marker([33.8703, -117.9253], { icon: pinIcon })
-    .addTo(map)
-    .bindPopup('<strong style="font-family:sans-serif;font-size:13px">Fullerton, CA</strong><br><span style="font-size:12px;color:#888">Home base</span>')
-    .openPopup();
+  let map;
+  function initMap() {
+    if (map) return;
+    map = L.map('map', {
+      center: [33.8703, -117.9253],
+      zoom: 10, zoomControl: true, scrollWheelZoom: false,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    const pinIcon = L.divIcon({
+      className: '',
+      html: '<div class="custom-pin"></div>',
+      iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -10]
+    });
+    // TO UPDATE: change coordinates + popup text for current location
+    L.marker([33.8703, -117.9253], { icon: pinIcon })
+      .addTo(map)
+      .bindPopup('<strong style="font-family:sans-serif;font-size:13px">Fullerton, CA</strong><br><span style="font-size:12px;color:#888">Home base</span>')
+      .openPopup();
+  }
 </script>
 
 </div><!-- end #site-content -->
@@ -305,8 +342,8 @@
     lockscreen.classList.add('hidden');
     siteContent.classList.add('visible');
     sessionStorage.setItem(SESSION_KEY, '1');
-    // Fix Leaflet map rendering inside hidden container
-    setTimeout(() => { if (typeof map !== 'undefined') map.invalidateSize(); }, 100);
+    // Init Leaflet map now that the container is visible
+    setTimeout(() => { initMap(); if (map) map.invalidateSize(); }, 100);
   }
 
   // ── NEXT UP: pull upcoming event from schedule data ──────
@@ -362,6 +399,11 @@
   btn.addEventListener('click', tryPassword);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') tryPassword(); });
   input.addEventListener('input', () => errMsg.classList.remove('visible'));
+</script>
+<script>
+  document.getElementById('nav-hamburger').addEventListener('click', function() {
+    document.getElementById('nav-links').classList.toggle('open');
+  });
 </script>
 </body>
 </html>
