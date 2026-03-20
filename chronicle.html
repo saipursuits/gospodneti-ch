@@ -100,6 +100,42 @@
 
   footer { max-width: 1100px; margin: 5rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
   .footer-mark { color: var(--ink2); margin: 0 6px; }
+
+  /* ── MOBILE NAV ── */
+  .nav-hamburger { display: none; background: none; border: 1px solid var(--border); border-radius: 2px; padding: 5px 9px; cursor: pointer; margin-left: auto; }
+  .nav-hamburger span { display: block; width: 16px; height: 1px; background: var(--muted); margin: 3px 0; transition: background 0.2s; }
+  .nav-hamburger:hover span { background: var(--ink); }
+
+  @media (max-width: 700px) {
+    nav { padding: 0 1.25rem; flex-wrap: wrap; height: auto; min-height: 52px; }
+    .nav-rule, .nav-tagline { display: none; }
+    .nav-hamburger { display: block; }
+    .nav-links { display: none; width: 100%; flex-direction: column; gap: 0; border-top: 1px solid var(--border); margin-left: 0; padding: 0.5rem 0; }
+    .nav-links.open { display: flex; }
+    .nav-links li { width: 100%; }
+    .nav-links a { display: block; padding: 0.6rem 0; }
+
+    .page-header { padding: 2.5rem 1.25rem 2rem; }
+    .ruled-divider { padding: 0 1.25rem; }
+
+    .map-section { padding: 0 1.25rem; }
+    .map-container { height: 220px; }
+
+    .filter-wrap { padding: 0 1.25rem; }
+
+    .stats-row { padding: 0 1.25rem; grid-template-columns: 1fr; border: none; gap: 0; }
+    .stat-card { border-right: none; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem; }
+
+    .log-section { padding: 0 1.25rem; }
+    .trip-table thead { display: none; }
+    .trip-table tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.75rem; padding: 0.85rem 0; border-bottom: 1px solid var(--border); background: none; }
+    .trip-table tbody tr:hover { background: var(--bg3); }
+    .trip-table td { padding: 0; border: none; }
+    .trip-table td:nth-child(3), .trip-table td:nth-child(4) { grid-column: 1 / -1; }
+    .trip-notes { max-width: 100%; }
+
+    footer { padding: 1.5rem 1.25rem 0; flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -108,7 +144,8 @@
   <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
   <div class="nav-rule"></div>
   <span class="nav-tagline">Family Log</span>
-  <ul class="nav-links">
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="nav-links">
     <li><a href="schedule.html">Schedule</a></li>
     <li><a href="chronicle.html" class="active">Chronicle</a></li>
     <li><a href="sidequests.html">Side Quests</a></li>
@@ -289,6 +326,10 @@ renderFilters();
 renderMap();
 renderStats();
 renderLog();
+
+document.getElementById('nav-hamburger').addEventListener('click', function() {
+  document.getElementById('nav-links').classList.toggle('open');
+});
 </script>
 </body>
 </html>
