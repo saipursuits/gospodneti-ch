@@ -106,6 +106,35 @@
 
   footer { max-width: 1100px; margin: 5rem auto 2rem; padding: 2rem 2.5rem 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.12em; }
   .footer-mark { color: var(--ink2); margin: 0 6px; }
+
+  /* ── MOBILE NAV ── */
+  .nav-hamburger { display: none; background: none; border: 1px solid var(--border); border-radius: 2px; padding: 5px 9px; cursor: pointer; margin-left: auto; }
+  .nav-hamburger span { display: block; width: 16px; height: 1px; background: var(--muted); margin: 3px 0; transition: background 0.2s; }
+  .nav-hamburger:hover span { background: var(--ink); }
+
+  @media (max-width: 700px) {
+    nav { padding: 0 1.25rem; flex-wrap: wrap; height: auto; min-height: 52px; }
+    .nav-rule, .nav-tagline { display: none; }
+    .nav-hamburger { display: block; }
+    .nav-links { display: none; width: 100%; flex-direction: column; gap: 0; border-top: 1px solid var(--border); margin-left: 0; padding: 0.5rem 0; }
+    .nav-links.open { display: flex; }
+    .nav-links li { width: 100%; }
+    .nav-links a { display: block; padding: 0.6rem 0; }
+
+    .page-header { padding: 2.5rem 1.25rem 2rem; }
+    .ruled-divider { padding: 0 1.25rem; }
+
+    .cal-wrap { padding: 0 1.25rem; }
+    .cal-cell { height: 72px; padding: 0.3rem; }
+    .event-dot { font-size: 7px; }
+
+    .upcoming-wrap { padding: 0 1.25rem; }
+    .event-row { grid-template-columns: 56px 1fr; gap: 0.75rem; padding: 0.85rem 1rem; }
+    .event-who-tag { display: none; }
+    .event-date-col strong { font-size: 1.1rem; }
+
+    footer { padding: 1.5rem 1.25rem 0; flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -114,7 +143,8 @@
   <a href="index.html" class="nav-logo">gospodneti<span class="tld">.ch</span></a>
   <div class="nav-rule"></div>
   <span class="nav-tagline">Family Log</span>
-  <ul class="nav-links">
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  <ul class="nav-links" id="nav-links">
     <li><a href="schedule.html" class="active">Schedule</a></li>
     <li><a href="chronicle.html">Chronicle</a></li>
     <li><a href="sidequests.html">Side Quests</a></li>
@@ -349,6 +379,10 @@ if (upcoming.length === 0) {
   });
   upcomingEl.appendChild(list);
 }
+
+document.getElementById('nav-hamburger').addEventListener('click', function() {
+  document.getElementById('nav-links').classList.toggle('open');
+});
 </script>
 </body>
 </html>
